@@ -1,0 +1,162 @@
+package CGGame;
+
+/// @brief the main protocol message, we should parse out protoCode first,
+///             and then if possible, use other Message to parse out protoBody
+message ProtoInfo {
+    optional int32  mainType    = 1;
+    optional int32  subType     = 2;
+    optional bytes  msgBody     = 3;
+}
+
+/// protoTypes.CGGAME_PROTO_SUBTYPE_MULTIPLE     =   1
+message MultiBody {
+    optional int32  curIndex  = 1;
+    optional int32  maxIndex  = 2;
+    optional bytes  msgBody   = 3;
+}
+
+/// protoTypes.CGGAME_PROTO_SUBTYPE_ACL          =   2
+message AclInfo {
+    optional int32 aclType = 1;
+    optional bytes aclMsg  = 2;
+}
+
+/// protoTypes.CGGAME_PROTO_SUBTYPE_HEARTBEAT    =   3
+message HeartBeat {
+    optional int32  fromType    = 1;
+    optional double timestamp   = 2;
+}
+
+/// protoTypes.CGGAME_PROTO_SUBTYPE_AGENTLIST    =   4
+message AgentList {
+    message OneAgent {
+        optional bytes  name        = 1;
+        optional bytes  addr        = 2;
+        optional int32  port        = 3;
+        optional int32  numPlayers  = 4;
+    }
+
+    repeated OneAgent agents    = 1;
+}
+
+/// protoTypes.CGGAME_PROTO_SUBTYPE_NOTICE       =   5
+message NoticeInfo {
+    optional int32 noticeType   = 1;   // 0, text, 1 app voice, amr-wb, 2,
+    optional bytes noticeText   = 2;
+}
+
+/// protoTypes.CGGAME_PROTO_MAINTYPE_AUTH    = 10
+message AuthInfo {
+    optional bytes playerId     = 1;
+    optional bytes password     = 2;
+    optional bytes challenge    = 3;
+    optional bytes clientkey    = 4;
+    optional bytes serverkey    = 5;
+    optional bytes hmac         = 6;
+    optional bytes etoken       = 7;
+    optional int32 authIndex    = 8;
+}
+
+/// protoTypes.CGGAME_PROTO_SUBTYPE_HALLJOIN
+message HallInfo {
+    optional int32 gameId       = 1;
+    optional int32 gameVersion  = 2;
+    optional int32 gameMode     = 3;
+    optional int32 FUserCode    = 4;
+    optional bytes appName      = 5;
+}
+
+/// protoTypes.CGGAME_PROTO_SUBTYPE_USERINFO
+message UserInfo {
+    repeated bytes fieldNames  = 1;
+
+    optional int32 FUserCode   = 2;    // user code, different in games, to replace uid
+    optional bytes FUniqueID   = 3;    // user code, different in games, to replace uid
+    optional bytes FPassword   = 4;
+    optional bytes FNickName   = 5;
+    optional bytes FOSType     = 6;    // device: iPhone, iPad, Mac, Win, Linux, Android,
+    optional bytes FPlatform   = 7;    // appstore: huawei, xiaomi, oppo, vivo, ...
+
+    optional bytes FMobile     = 10;
+    optional bytes FIDCard     = 11;
+    optional bytes FEmail      = 12;
+    optional bytes FRegTime    = 13;
+
+    optional bytes FLastIP          = 15;
+    optional bytes FLastLoginTime   = 16;
+    optional double FTotalTime      = 17;
+
+    optional int32 FAvatarID    = 20;        // avatar 3
+    optional bytes FAvatarUrl   = 21;        // avatar 1
+    optional bytes FAvatarData  = 22;        // avatar 2
+
+    optional bytes  FLocation   = 25;
+    optional double FLongitude  = 26;
+    optional double FLatitude   = 27;
+    optional double FAltitude   = 28;
+
+    optional double FNetSpeed   = 30;
+}
+
+/// protoTypes.CGGAME_PROTO_SUBTYPE_SITDOWN
+message SeatInfo {
+    optional int32 roomId   = 1;
+    optional int32 seatId   = 2;
+    optional int32 userCode = 3;
+}
+
+message WaitUserInfo {
+    optional int32 tableStatus  = 1;
+    optional int32 timeout      = 2;
+    optional int32 waitMask     = 3;
+}
+
+message ChatInfo {
+    optional int32 gameId           = 1;
+    optional int32 chatType         = 2;    // 0, text, 1 app voice, amr-wb, 2,
+    optional int32 listenerId       = 3;    // listener table's tableId
+    optional int32 speekerCode      = 4;    // speeker's FUserCode
+    optional bytes speakerNick      = 5;
+    optional bytes chatText         = 6;
+}
+
+message RoomInfo {
+    optional int32 roomId       = 1;
+    optional int32 expireTime   = 2;
+    optional int32 openTime     = 3;
+    optional int32 gameCount    = 4;    // gameCount == 0? 看roomDetails
+    optional int32 ownerCode    = 5;    // owner's FUserCode
+    optional bytes ownerName    = 6;
+    optional bytes roomDetails  = 8;
+}
+
+message ExitInfo {
+    optional int32 roomId       = 1;
+    optional int32 timeout      = 2;
+    optional int32 mask         = 3;
+
+    optional int32 seatId       = 4;
+    optional int32 ownerCode    = 5;    // owner's FUserCode
+}
+
+// sendTableMap
+message TableMapInfo {
+    optional bytes field    = 1;
+    repeated int32 userCode = 2;        // FUserCode
+    repeated int32 seatId   = 3;
+}
+
+message GiftInfo {
+    optional bytes  giftName    = 1;
+    optional int32  coinCost    = 2;
+    optional int32  srcSeatId   = 3;
+    optional int32  dstSeatId   = 4;
+}
+
+message ShareBonusInfo {
+    optional int32 maxCount = 1;
+    optional int32 curCount = 2;
+    optional int32 bonusNum = 3;
+}
+
+
