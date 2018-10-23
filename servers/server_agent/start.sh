@@ -17,7 +17,7 @@ then
     exit
 fi
 
-echo "NodeName = $NodeName, ServerKind = Agent, ServerNo = $ServerNo"
+echo "NodeName = $NodeName, ServerKind = server_agent, ServerNo = $ServerNo"
 
 ### so we can distinguish different skynet processes
 ../skynet/skynet server_agent/config.lua $NodeName $ServerNo

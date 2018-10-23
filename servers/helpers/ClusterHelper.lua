@@ -26,7 +26,7 @@ class.getNodeInfo = function ( cfg )
     ret.appName  = skynet.getenv("app_name")
     ret.nodeName = skynet.getenv("NodeName")
 
-    local node   = cfg.MySite[ret.NodeName]
+    local node   = cfg.MySite[ret.nodeName]
     assert(node)
     ret.privateAddr = node[1]
     ret.publicAddr  = node[2]
