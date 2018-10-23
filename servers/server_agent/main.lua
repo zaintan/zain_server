@@ -19,7 +19,8 @@ skynet.start(function()
     ---! 启动debug_console服务
     local port = skynet.call(nodeInfo, "lua", "getConfig", "nodeInfo", "debugPort")
     assert(port > 0)
-    print("debug port is", port)
+    skynet.error("debug port is:", port)
+    --print("debug port is", port)
     skynet.newservice("debug_console", port)
 
     ---! 集群处理
@@ -37,6 +38,9 @@ skynet.start(function()
     ---! 启动AgentWatch
     skynet.uniqueservice("WatchDog")
 
+    ---! 启动 NodeLink 服务
+    --skynet.newservice("NodeLink")
+    
     ---! 启动好了，没事做就退出
     skynet.exit()
 end)

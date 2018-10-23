@@ -15,6 +15,7 @@ local CMD  = {}
 
 function CMD.initNode()
 	clsHelper.parseConfig(info)
+	skynet.error("NodeInfo initNode parseConfig:", info)
 	return ""
 end
 
@@ -36,6 +37,19 @@ end
 function CMD.getServiceAddr(key)
 	local ret = info[key]
 	ret = ret or ""
+	return ret
+end
+
+function CMD.getRegisterInfo()
+	local nodeInfo = info.nodeInfo
+	local ret = {}
+	ret.kind  = nodeInfo.serverKind
+	ret.name  = nodeInfo.appName
+	ret.addr  = nodeInfo.privateAddr
+	ret.port  = nodeInfo.debugPort
+	ret.numPlayers = nodeInfo.numPlayers
+
+	--ret.conf  = nodeInfo[clsHelper.kHallConfig]
 	return ret
 end
 
