@@ -62,7 +62,7 @@ end
 local function start()
 	cluster.register("NodeInfo")
 
-	skynet.dispatch("lua", function ( _,_ cmd, ...)
+	skynet.dispatch("lua", function ( _,_,cmd, ...)
 		local f = CMD[cmd]
 		if f then 
 			local ret = f(...)
