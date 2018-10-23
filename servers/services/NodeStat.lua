@@ -36,11 +36,11 @@ local function alloc_info()
 end
 
 local DumpFuncMap = {
-	["Agent"] = agent_info;
-	["Game"]  = game_info;
-	["User"]  = user_info;
-	["Node"]  = node_info;
-	["Alloc"] = alloc_info;
+	["server_agent"] = agent_info;
+	["server_game"]  = game_info;
+	["server_user"]  = user_info;
+	["server_node"]  = node_info;
+	["server_alloc"] = alloc_info;
 }
 
 local function dump_info()

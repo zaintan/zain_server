@@ -38,7 +38,7 @@ class.getNodeInfo = function ( cfg )
     ret.numPlayers  = 0
 
     --代理服 必须有配 对外ip
-    if ret.serverKind == "Agent" then 
+    if ret.serverKind == "server_agent" then 
         assert(ret.publicAddr)
     end 
 
@@ -56,7 +56,7 @@ end
 ---! 获取config.cluster列表和各服务器列表
 class.getAllNodes = function ( cfg, info )
     --所有的Server类型
-    local all = {"Agent","Alloc","User","Game", "Node"}
+    local all = {"server_agent","server_alloc","server_user","server_game", "server_node"}
     local ret = {}
     for nodeName,nodeValue in pairs(cfg.MySite) do
         for _,serverKind in ipairs(all) do

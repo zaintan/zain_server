@@ -7,7 +7,7 @@ local _skynet	= _root.."../skynet/"
 
 ---! server_agent 用到的参数 从 命令行传的参数
 NodeName    =  "$NodeName"
-ServerKind  =  "Agent"
+ServerKind  =  "server_agent"
 ServerNo    =  "$ServerNo"
 
 ----------------------------------
