@@ -1,0 +1,49 @@
+package ZainHall;
+
+/// @brief the main protocol message, we should parse out protoCode first,
+///             and then if possible, use other Message to parse out protoBody
+message CommonProtocol {
+    enum CommonProtocolType {
+        REQUEST  = 1;//请求
+        RESPONSE = 2;//返回
+        UPLOAD   = 3;//客户端 上报, 单向 无返回
+        PUSH     = 4;//服务器 推送, 单向
+
+    }
+
+    optional int64  clientRequestTime    = 1;
+    optional int64  serverReceiveTime    = 2;
+    optional int32  requestType          = 3;
+}
+
+//总返回
+message Response {
+    extensions 100 to max;
+    enum ResponseType {
+        HEAR = 1; //心跳
+        LOING = 2; //登录(loginRequest)
+        REGISTER = 3; //注册()
+        ROOM = 4; //房间总返回(roomResponse)
+        MSG = 5; //提示(MsgAllResponse)
+        PROPERTY = 6; //通用属性值(accountPropertyListResponse)
+        GAME_NOTICE = 7; //游戏公告(gameNoticeAllResponse)
+        MY_TEST = 8; //我的压力测试(myTestResponse)
+        OTHER_SYS = 9; //其它系统(otherSystemResponse)
+        Store = 10; //商城(storeAllResponse)
+        GOLD_CARD = 11; //房卡相关
+        MONEY_GAME = 12; //金币场(MoneyGameResponse)
+        ACTIVITY = 13; //精彩活动(ActivityResponse)
+        PROXY_ROOM = 14; //代理开房间(proxyRoomAllResponse)
+        SUBAPP_UPDATE = 15; //子游戏请求更新差异包返回 ( SubAppUpdateResponse )
+        SUBAPP_ITEM_UPDATE = 16; //子游戏更新 （ UpdateSubAppItemResponse ）
+        RANK = 17; //排行榜返回
+        PLAYER_VIEW = 18; //查看玩家镜像
+        SY_PROPERTY = 19; //系统参数信息返回(syPropertyResponse)
+        S2S = 20; //服务器用
+        S2C = 21; //客户端与服务器通信，拆包(公用CommonProto)
+        CLUB = 22; //俱乐部
+        /////////////////////////////////////////不在这里继续加协议了，可以参考RoomInfoHandler///////////////////////////////
+    }
+
+    required ResponseType responseType = 1; //返回类型
+}

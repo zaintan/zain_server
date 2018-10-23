@@ -1,0 +1,16 @@
+package ZainCommon;
+
+message CommonProtocol {
+    enum CommonProtocolType {
+        REQUEST  = 1;//请求
+        RESPONSE = 2;//返回
+        UPLOAD   = 3;//客户端 上报, 单向 无返回
+        PUSH     = 4;//服务器 推送, 单向
+    }
+    required CommonProtocolType protocolType = 1;
+    optional int64 clientRequestTime         = 2;
+    optional int64 serverReceiveTime         = 3;
+    optional int64 serverResponseTime        = 4;
+}
+
+

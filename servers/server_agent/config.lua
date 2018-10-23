@@ -35,16 +35,16 @@ logpath     = _root .. "/logs/"
 bootstrap   = "snlua bootstrap"
 
 ---!  snlua用到的参数
-lua_path    = _skynet.."lualib/?.lua;"..app_root.."?.lua;".._root .."Algos/?.lua;".._root.."Helpers/?.lua;".._root.."Services/?.lua"
+lua_path    = _skynet.."lualib/?.lua;"..app_root.."?.lua;".._root .."algos/?.lua;".._root.."helpers/?.lua;".._root.."services/?.lua"
 lua_cpath   = _skynet.."luaclib/?.so;"..app_root.."cservice/?.so"
-luaservice  = _skynet.."service/?.lua;".. app_root .. "?.lua;" .._root.."Services/?.lua;".._root.."managers/?.lua"
+luaservice  = _skynet.."service/?.lua;".. app_root .. "?.lua;" .._root.."services/?.lua;".._root.."managers/?.lua"
 lualoader   = _skynet.."lualib/loader.lua"
 start       = "main"
 
 ---!  snax用到的参数
-snax    = _skynet.."service/?.lua;".. app_root .. "?.lua;" .._root.."Services/?.lua"
+snax    = _skynet.."service/?.lua;".. app_root .. "?.lua;" .._root.."services/?.lua"
 
 ---!  cluster 用到的参数
-cluster = app_root.."../config/config.cluster"
+cluster = app_root.."../config/cluster.cfg"
 
 
