@@ -88,7 +88,7 @@ local function start()
 	end)
 
 	skynet.info_func(function ()
-		return tblHelper.table_ser(info)
+		return tblHelper.encode(info)
 	end)	
 end
 

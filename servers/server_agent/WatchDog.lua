@@ -153,11 +153,11 @@ local function loopReport ()
     local timeout = 60  -- 60 seconds
     while true do
         local stat = CMD.getStat()
-        skynet.call(nodeInfoSvr, "lua", "updateConfig", stat.sum, "nodeInfo", "numPlayers")
-        local ret, nodeLink = pcall(skynet.call, nodeInfoSvr, "lua", "getServiceAddr", "NodeLink")
-        if ret and nodeLink ~= "" then
-            pcall(cluster.send, nodeLink, "lua", "heartBeat", stat.sum)
-        end
+        --skynet.call(nodeInfoSvr, "lua", "updateConfig", stat.sum, "nodeInfo", "numPlayers")
+        --local ret, nodeLink = pcall(skynet.call, nodeInfoSvr, "lua", "getServiceAddr", "NodeLink")
+        --if ret and nodeLink ~= "" then
+        --    pcall(cluster.send, nodeLink, "lua", "heartBeat", stat.sum)
+        --end
 
         skynet.sleep(timeout * 100)
     end
