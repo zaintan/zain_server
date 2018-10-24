@@ -8,6 +8,7 @@ local skynet     = require "skynet"
 local cluster    = require "skynet.cluster"
 
 local clsHelper  = require "ClusterHelper"
+local tblHelper  = require "TableHelper"
 ---! 数据
 local info = {}
 ---! 接口
@@ -15,7 +16,6 @@ local CMD  = {}
 
 function CMD.initNode()
 	clsHelper.parseConfig(info)
-	skynet.error("NodeInfo initNode parseConfig:", info)
 	return ""
 end
 
@@ -75,7 +75,6 @@ end
 
 local function start()
 	cluster.register("NodeInfo")
-
 	skynet.dispatch("lua", function ( _,_,cmd, ...)
 		local f = CMD[cmd]
 		if f then 
@@ -87,6 +86,10 @@ local function start()
 			skynet.error("unknown cmd :", cmd)
 		end 
 	end)
+
+	skynet.info_func(function ()
+		return tblHelper.table_ser(info)
+	end)	
 end
 
 skynet.start(start)

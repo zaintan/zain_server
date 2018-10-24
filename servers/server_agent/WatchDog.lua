@@ -156,7 +156,7 @@ local function loopReport ()
         skynet.call(nodeInfoSvr, "lua", "updateConfig", stat.sum, "nodeInfo", "numPlayers")
         local ret, nodeLink = pcall(skynet.call, nodeInfoSvr, "lua", "getServiceAddr", "NodeLink")
         if ret and nodeLink ~= "" then
-            pcall(skynet.send, nodeLink, "lua", "heartBeat", stat.sum)
+            pcall(cluster.send, nodeLink, "lua", "heartBeat", stat.sum)
         end
 
         skynet.sleep(timeout * 100)
