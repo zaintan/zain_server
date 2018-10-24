@@ -56,7 +56,7 @@ end
 ---! 获取config.cluster列表和各服务器列表
 class.getAllNodes = function ( cfg, info )
     --所有的Server类型
-    local all = {"server_agent","server_alloc","server_user","server_game", "server_node"}
+    local all = {"server_agent","server_alloc","server_center","server_game"}
     local ret = {}
     for nodeName,nodeValue in pairs(cfg.MySite) do
         for _,serverKind in ipairs(all) do

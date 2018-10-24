@@ -148,24 +148,26 @@ local function startWatch ()
     })
 end
 
+--[[
 -- 心跳, 汇报在线人数
 local function loopReport ()
     local timeout = 60  -- 60 seconds
     while true do
         local stat = CMD.getStat()
-        --skynet.call(nodeInfoSvr, "lua", "updateConfig", stat.sum, "nodeInfo", "numPlayers")
-        --local ret, nodeLink = pcall(skynet.call, nodeInfoSvr, "lua", "getServiceAddr", "NodeLink")
-        --if ret and nodeLink ~= "" then
-        --    pcall(cluster.send, nodeLink, "lua", "heartBeat", stat.sum)
-        --end
+
+        local centerList = skynet.call(nodeInfoSvr,  "lua", "getConfig", "server_center") 
+        --向中心服 上报当前在线人数
+        if centerList and #centerList == 1 then 
+            pcall(cluster.send, centerList[1], ".ServerStatus" ,"lua", "heartBeat", stat.sum)
+        end
 
         skynet.sleep(timeout * 100)
     end
 end
-
+]]
 ---! 启动函数
 skynet.start(function()
     registerDispatch()
     startWatch()
-    skynet.fork(loopReport)
+    --skynet.fork(loopReport)
 end)

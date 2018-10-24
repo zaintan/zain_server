@@ -1,16 +1,22 @@
 package ZainCommon;
 
-message CommonProtocol {
-    enum CommonProtocolType {
-        REQUEST  = 1;//请求
+message ProtoInfo {
+    enum ProtoMainType {
+        REQUEST  = 1;//请求 客户端用
         RESPONSE = 2;//返回
         UPLOAD   = 3;//客户端 上报, 单向 无返回
         PUSH     = 4;//服务器 推送, 单向
     }
-    required CommonProtocolType protocolType = 1;
-    optional int64 clientRequestTime         = 2;
-    optional int64 serverReceiveTime         = 3;
-    optional int64 serverResponseTime        = 4;
+
+    enum ProtoSubType {
+        HALL     = 1;//大厅消息
+        ALLOC    = 2;//创建 加入房间消息
+        ROOM     = 3;//房间内消息
+    }
+
+    required ProtoMainType    mainType       = 1;
+    required ProtoSubType     subType        = 2;
+    optional bytes            msgBody        = 3;
 }
 
 

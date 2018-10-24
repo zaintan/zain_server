@@ -23,11 +23,7 @@ local function game_info()
 	return ""
 end
 
-local function user_info()
-	return ""
-end
-
-local function node_info()
+local function center_info()
 	return ""
 end
 
@@ -36,11 +32,10 @@ local function alloc_info()
 end
 
 local DumpFuncMap = {
-	["server_agent"] = agent_info;
-	["server_game"]  = game_info;
-	["server_user"]  = user_info;
-	["server_node"]  = node_info;
-	["server_alloc"] = alloc_info;
+	["server_agent"]   = agent_info;
+	["server_game"]    = game_info;
+	["server_center"]  = center_info;
+	["server_alloc"]   = alloc_info;
 }
 
 local function dump_info()

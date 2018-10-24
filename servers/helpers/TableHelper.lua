@@ -111,7 +111,7 @@ local function table_ser (tablevalue, tablekey, mark, assign)
             table.insert(container, keyvaluestr)
         end
     end
-    return string.format("{\n%s\n}", table.concat(container, ",\n"))
+    return string.format("{%s}", table.concat(container, ","))
 end
 class.table_ser = table_ser
 

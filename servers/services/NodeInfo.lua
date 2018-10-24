@@ -93,3 +93,46 @@ local function start()
 end
 
 skynet.start(start)
+
+--[[
+info = {
+	["WatchDog"]=14,
+
+	["server_agent"]={
+		[1]="node1_server_agent0",
+		[2]="node1_server_agent1"
+	},
+	["server_alloc"]={
+		[1]="node1_server_alloc0"
+	},
+	["server_game"]={
+		[1]="node1_server_game0",
+		[2]="node1_server_game1"
+	},
+	["server_center"]={
+		[1]="node1_server_user0"
+	},	
+	["clusterList"]={
+		["node1_server_agent1"]    = "127.0.0.1:8051",
+		["node1_server_game0"]     = "127.0.0.1:8250",
+		["node1_server_agent0"]    = "127.0.0.1:8050",
+		["node1_server_node0"]     = "127.0.0.1:8550",
+		["node1_server_alloc0"]    = "127.0.0.1:8450",
+		["node1_server_game1"]     = "127.0.0.1:8251",
+		["node1_server_user0"]     = "127.0.0.1:8350"
+	},
+	["nodeInfo"]={
+		["debugPort"]	= 8000,
+		["serverKind"]  = "server_agent",
+		["numPlayers"]  = 0,
+		["nodeName"]    = "node1",
+		["tcpPort"]     = 8100,
+		["privateAddr"] = "127.0.0.1",
+		["serverName"]  = "server_agent0",
+		["nodePort"]    = 8050,
+		["publicAddr"]  = "111.230.152.22",
+		["serverIndex"] = 0,
+		["appName"]     = "node1_server_agent0"
+	},
+};
+]]--

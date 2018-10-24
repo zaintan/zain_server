@@ -1,5 +1,8 @@
+---! 依赖库
 local skynet    = require "skynet"
 local socket    = require "skynet.socket"
+---! 帮助库
+local packetHelper  = (require "PacketHelper").create("protos/ZainCommon.pb")
 
 local class = {mt = {}}
 class.mt.__index = class
@@ -21,6 +24,8 @@ function class.create(info)
     end
 
     self.agentSign   = os.time()
+    --self.m_bIsLogin  = false
+
     self:active()
 
     skynet.error("CMD start called on fd ", self.client_fd)
@@ -50,11 +55,6 @@ function class:active()
 	self.last_update = skynet.time()
 end
 
-function class:getUnActiveSeconds()
-	return skynet.time() - self.last_update
-end
-
-
 function class:kickMe()
     skynet.error("heartbeat timeout! kick me!")
     pcall(skynet.send, self.watchdog, "lua", "closeAgent", self.client_fd)
@@ -62,6 +62,7 @@ end
 
 function class:quit()
     if self.connApp and self.connAddr then
+        --下线通知 中心服 和 游戏服
         local flg, ret = pcall(cluster.call, self.connApp, self.connAddr, "agentQuit",
                                 self.FUserCode, self.agentSign)
         if not flg or not ret then
@@ -83,11 +84,43 @@ function class:sendClientPacket( packet )
     end 
 end
 
+function class:handlerAllocRequest(msg, data)
+    -- body
+end
+
+function class:handlerHallRequest(msg, data)
+    -- body
+end
+
+function class:handlerRoomRequest(msg, data)
+    -- body
+end
+
+local ComandFuncMap = {
+    [1] = class.handlerHallRequest;
+    [2] = class.handlerAllocRequest;
+    [3] = class.handlerRoomRequest;
+}
+
 function class:command_handler(msg)
     self:active()
+    --解析包头 转发处理消息 做对应转发
+    local args = packetHelper:decodeMsg("ZainCommon.ProtoInfo",msg)
+    if args.mainType == 1 or args.mainType == 3 then 
+        local f = ComandFuncMap[args.subType]
+        if f then 
+            return f(self, msg, args)
+        else--非法请求
+
+        end 
+    else
+        --非法请求
+    end 
 end
 
 function class:packHeartBeat()
     return ""
 end
+
+
 return class
