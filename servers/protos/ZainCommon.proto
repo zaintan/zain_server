@@ -1,4 +1,4 @@
-package ZainCommon;
+package Zain;
 
 message ProtoInfo {
     enum ProtoMainType {
@@ -14,9 +14,68 @@ message ProtoInfo {
         ROOM     = 3;//房间内消息
     }
 
-    required ProtoMainType    mainType       = 1;
-    required ProtoSubType     subType        = 2;
-    optional bytes            msgBody        = 3;
+    required ProtoMainType    main_type       = 1;
+    required ProtoSubType     sub_type        = 2;
+    optional int32            msg_id          = 3;
+    optional bytes            msg_body        = 4;
 }
 
+message AccountInfo {
+    optional int64     user_id        = 1;
+    optional string    user_name      = 2;
+    optional string    head_img_url   = 3;
+    optional int32     sex            = 4;
+    optional int64     diamond        = 5;
+    optional int64     gold           = 6;
+    optional int32     vip_level      = 7;    
+}
 
+message RoomUserInfo {
+    optional int64     user_id        = 1;
+    optional string    user_name      = 2;
+    optional string    head_img_url   = 3;
+    optional int32     score          = 4;  
+    optional int32     seat_index     = 5;
+}
+
+message LoginRequest {
+    required int32     login_type     = 1;
+    optional string    token          = 2;
+    optional int32     platform       = 3; //1=android 2=ios 3=pc
+    optional string    client_version = 4;
+}
+
+message LoginResponse {
+    required int32         status         = 1;//登录 成功,失败
+    optional string        status_tip     = 2;  
+    optional AccountInfo   user_info      = 3;  
+
+}
+
+message CreateRoomRequest { 
+    required int32     game_id        = 1;
+}
+
+message CreateRoomResponse {
+    required int32     status         = 1;//成功,失败
+    optional string    status_tip     = 2;      
+    optional int32     room_id        = 3; 
+}
+
+message JoinRoomRequest {
+    required int32     room_id        = 1;
+}
+
+message JoinRoomRoomResponse {
+    required int32     status         = 1;//成功,失败
+    optional string    status_tip     = 2;   
+
+    optional string    game_name      = 3;
+    optional int32     room_id        = 4;
+    optional int32     cur_round      = 5;
+    optional int32     total_round    = 6;
+    optional int32     game_status    = 7;
+    optional int32     remain_cards   = 8;
+
+    repeated RoomUserInfo  players    = 9;
+}
