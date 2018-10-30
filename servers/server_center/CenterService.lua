@@ -49,7 +49,7 @@ function CMD.login( args )
     if true then
         Log.i("CenterService","handleLoginRequest")
         Log.dump("CenterService", args)
-        return {"status" = "ok";}
+        return {status = "ok";}
     end 
 end
 
