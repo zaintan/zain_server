@@ -84,9 +84,9 @@ function class:sendClientPacket( packet )
     end 
 end
 
-function class:sendClientMsg(mainType,subType,protoName,data)
+function class:sendClientMsg(main_type,sub_type,protoName,data)
     local body   = packetHelper:encodeMsg("Zain."..protoName, data)
-    local packet = packetHelper:makeProtoData(mainType, subType, ProtoHelper.NameToId[protoName], body)
+    local packet = packetHelper:makeProtoData(main_type, sub_type, ProtoHelper.NameToId[protoName], body)
     self:sendClientPacket(packet)
 end
 
@@ -139,16 +139,16 @@ function class:command_handler(msg)
     self:active()
     --解析包头 转发处理消息 做对应转发
     local args = packetHelper:decodeMsg("Zain.ProtoInfo",msg)
-    if args.mainType == 1 or args.mainType == 3 then --request or upload
-        local f = ComandFuncMap[args.subType]
+    if args.main_type == 1 or args.main_type == 3 then --request or upload
+        local f = ComandFuncMap[args.sub_type]
         if f then 
             return f(self, msg, args)
         else--非法请求
-            self:sendErrorTip(string.format("Invalid Request! subType = %d,subType must be [1,4]", args.subType))
+            self:sendErrorTip(string.format("Invalid Request! sub_type = %d,sub_type must be [1,4]", args.sub_type))
         end 
     else
         --非法请求
-        self:sendErrorTip(string.format("Invalid Request! mainType = %d,mainType must be 1 or 3", args.mainType))
+        self:sendErrorTip(string.format("Invalid Request! main_type = %d,main_type must be 1 or 3", args.main_type))
     end 
 end
 
