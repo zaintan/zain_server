@@ -86,15 +86,15 @@ end
 
 function class:sendClientMsg(mainType,subType,protoName,data)
     local body   = packetHelper:encodeMsg("Zain."..protoName, data)
-    local packet = packetHelper:makeProtoData(mainType, subType, string.pack(">I2",ProtoHelper.NameToId[protoName])..body)
+    local packet = packetHelper:makeProtoData(mainType, subType, ProtoHelper.NameToId[protoName], body)
     self:sendClientPacket(packet)
 end
 
-function class:handlerAllocRequest(msg, data)
+function class:handlerAllocRequest(msg, args)
     -- body
 end
 
-function class:handlerHallRequest(msg, data)
+function class:handlerHallRequest(msg, args)
     -- body
 --    local msgId   = string.unpack(">I2",msg)
 --    if msgId == 1 then --login
@@ -102,7 +102,7 @@ function class:handlerHallRequest(msg, data)
 --    end 
 end
 
-function class:handlerRoomRequest(msg, data)
+function class:handlerRoomRequest(msg, args)
     -- body
 end
 
@@ -115,11 +115,11 @@ local GateComandFuncMap = {
     [4] = class.handlerHeartRequest;--心跳
 }
 
-function class:handlerGateRequest(msg, data)
-    local msgId    = string.unpack(">I2",msg)
+function class:handlerGateRequest(msg, args)
+    local msgId    = args.msg_id
     local f        = GateComandFuncMap[msgId]
     if f then 
-        local args = packetHelper:decodeMsg(ProtoHelper.IdToName[msgId], string.sub(msg, 3))
+        local args = packetHelper:decodeMsg(ProtoHelper.IdToName[msgId], msg)
         return f(self,args)
     else--非法请求
         self:sendErrorTip("Invalid Gate Request")

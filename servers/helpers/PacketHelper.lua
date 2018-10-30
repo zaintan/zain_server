@@ -54,11 +54,12 @@ class.registerProtoName  = registerProtoName
 
 
 ---! @brief make a general proto data for client - server.
-local function makeProtoData (self, main, sub, body)
+local function makeProtoData (self, main, sub, id,body)
     local msg = {
-        mainType = main,
-        subType  = sub,
-        msgBody  = body
+        main_type = main,
+        sub_type  = sub,
+        msg_id    = id,
+        msg_body  = body
     }
 
     local packet = protobuf.encode("Zain.ProtoInfo", msg)

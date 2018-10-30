@@ -15,8 +15,8 @@ message ProtoInfo {
         ROOM     = 4;//房间内消息
     }
 
-    required ProtoMainType    main_type       = 1;
-    required ProtoSubType     sub_type        = 2;
+    required int32            main_type       = 1;
+    required int32            sub_type        = 2;
     optional int32            msg_id          = 3;
     optional bytes            msg_body        = 4;
 }
@@ -82,7 +82,7 @@ message JoinRoomRoomResponse {
 }
 
 message HeartRequest {
-    
+
 }
 
 message HeartResponse {
