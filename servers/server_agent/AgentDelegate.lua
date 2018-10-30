@@ -1,5 +1,6 @@
 ---! 依赖库
 local skynet    = require "skynet"
+local cluster   = require "skynet.cluster"
 local socket    = require "skynet.socket"
 ---! 帮助库
 local packetHelper  = (require "PacketHelper").create("protos/ZainCommon.pb")
