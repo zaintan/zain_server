@@ -19,7 +19,7 @@ skynet.start(function()
     ---! 启动debug_console服务
     local port = skynet.call(nodeInfo, "lua", "getConfig", "nodeInfo", "debugPort")
     assert(port > 0)
-    skynet.error("debug port is:", port)
+    Log.i("Main","debug port is:%d", port)
     --print("debug port is", port)
     skynet.newservice("debug_console", port)
 

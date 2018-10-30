@@ -22,7 +22,7 @@ function CMD.start( info )
     if not agent then 
         agent           = agentDelegate.create(info)
     else
-        skynet.error("can not repeat start agent!")
+        Log.e("Agent","can not repeat start agent!")
     end 
 
     return 0
@@ -74,7 +74,7 @@ skynet.start(function ()
                 skynet.ret(skynet.pack(ret))
             end
         else
-            skynet.error("unknown command ", cmd)
+            Log.e("unknown command :%d", cmd)
         end
     end)	
 

@@ -29,7 +29,7 @@ function class.create(info)
 
     self:active()
 
-    skynet.error("CMD start called on fd ", self.client_fd)
+    Log.i("Agent","CMD start called on fd %d",self.client_fd)
     skynet.call(self.gate, "lua", "forward", self.client_fd)
     skynet.fork(function ()
         while true do 
@@ -56,7 +56,7 @@ function class:active()
 end
 
 function class:kickMe()
-    skynet.error("heartbeat timeout! kick me!")
+    Log.i("Agent","heartbeat timeout! kick me!")
     pcall(skynet.send, self.watchdog, "lua", "closeAgent", self.client_fd)
 end
 
@@ -66,7 +66,7 @@ function class:quit()
         local flg, ret = pcall(cluster.call, self.connApp, self.connAddr, "agentQuit",
                                 self.FUserCode, self.agentSign)
         if not flg or not ret then
-            kickMe()
+            self:kickMe()
         end
     end
 
@@ -115,8 +115,8 @@ function class:handlerLoginRequest(args)
         self:sendErrorTip("Invalid Login Request!")
         return
     end 
-    skynet.error("handlerLoginRequest:",args.login_type,args.token)
-    self:sendErrorTip("Invalid Gate Request")
+    --skynet.error("handlerLoginRequest:",args.login_type,args.token)
+    --self:sendErrorTip("Invalid Gate Request")
 end
 
 
@@ -129,7 +129,7 @@ function class:handlerGateRequest(msg, args)
     local msgId    = args.msg_id
     local f        = GateComandFuncMap[msgId]
     if f then 
-        local args = packetHelper:decodeMsg(ProtoHelper.IdToName[msgId], args.msg_body)
+        local args = packetHelper:decodeMsg("Zain."..ProtoHelper.IdToName[msgId], args.msg_body)
         return f(self,args)
     else--非法请求
         self:sendErrorTip("Invalid Gate Request")

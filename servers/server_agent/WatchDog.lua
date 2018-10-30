@@ -24,7 +24,7 @@ local function close_agent( fd )
 
         pcall(skynet.send, info.agent, "lua", "disconnect")
     else
-        skynet.error("unable to close agent, fd = ",fd)
+        Log.e("WatchDog","unable to close agent, fd = ",fd)
     end 
 end
 
@@ -39,7 +39,7 @@ function SOCKET.open( fd, addr )
         close_agent(fd)
     end 
 
-    skynet.error("watchdog tcp agent start ",fd, addr)
+    Log.i("WatchDog","tcp agent start fd:%d, addr:%d",fd, addr)
     local agent = skynet.newservice("TcpAgent")
 
     local info = {}
@@ -58,7 +58,7 @@ end
 
 ---! @brief close fd, is this called after we transfer it to agent ?
 function SOCKET.close( fd )
-    skynet.error("socket close", fd)
+    Log.i("WatchDog","socket close:%d", fd)
     --0.01s * 10 = 0.1s
     skynet.timeout(10, function ()
         close_agent(fd)
@@ -69,7 +69,7 @@ end
 
 ---! @brief error on socket, is this called after we transfer it to agent ?
 function SOCKET.error( fd, msg)
-    skynet.error("socket error", fd, msg)
+    Log.e("WatchDog","socket error fd:%d, err:%s", fd, msg)
 
     skynet.timeout(10, function ()
         close_agent(fd)
@@ -79,7 +79,7 @@ end
 ---! @brief warnings on socket, is this called after we transfer it to agent ?
 function SOCKET.warning(fd, size)
     -- size K bytes havn't send out in fd
-    skynet.error("socket warning", fd, size)
+    Log.w("WatchDog","socket warning fd:%d, size:%d", fd, size)
 end
 
 ---! @brief packets on socket, is this called after we transfer it to agent ?
@@ -112,7 +112,7 @@ local function registerDispatch()
             if f then 
                 f(...)
             else
-                skynet.error("unknown sub command ",subcmd, " for cmd ", cmd)
+                Log.e("WatchDog","unknown sub command:%d for cmd:%d ",subcmd,cmd)
             end 
             --socket api don't need return
         else 
@@ -123,7 +123,7 @@ local function registerDispatch()
                     skynet.ret(skynet.pack(ret))
                 end 
             else 
-                skynet.error("unknown command ", cmd)
+                Log.e("WatchDog","unknown command:%d",cmd)
             end
         end
     end)
