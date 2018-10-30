@@ -8,6 +8,8 @@ M.IdToName = {
 	[10003] = "JoinRoomRoomResponse";
 	[4]     = "HeartRequest";
 	[10004] = "HeartResponse";
+
+	[20001] = "CommonTipsPush";
 };
 M.NameToId = nil;
 

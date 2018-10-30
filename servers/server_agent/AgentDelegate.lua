@@ -110,9 +110,16 @@ function class:handlerHeartRequest(args)
     self:sendClientMsg(2,1,"HeartResponse",{})
 end
 
+function class:handlerLoginRequest(args)
+    skynet.error("handlerLoginRequest:",args.login_type,args.token)
+
+    self:sendErrorTip("Invalid Gate Request")
+end
+
 
 local GateComandFuncMap = {
     [4] = class.handlerHeartRequest;--心跳
+    [1] = class.handlerLoginRequest;
 }
 
 function class:handlerGateRequest(msg, args)
