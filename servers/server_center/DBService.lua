@@ -7,7 +7,7 @@
 local skynet    = require "skynet"
 
 ---! 全局常量
-local redis_srv
+--local redis_srv
 local mysql_srv
 
 ---! lua commands
@@ -19,28 +19,28 @@ function CMD.execDB (cmd)
 end
 
 ---! 单独执行 redis 命令
-function CMD.runCmd (cmd, key, ...)
-    return skynet.call(redis_srv, "lua", "runCmd", cmd, key, ...)
-end
+--function CMD.runCmd (cmd, key, ...)
+--    return skynet.call(redis_srv, "lua", "runCmd", cmd, key, ...)
+--end
 
 ---! load from mysql, and update redis too
 function CMD.loadDB (tableName, keyName, keyValue, noInsert)
     local ret = skynet.call(mysql_srv, "lua", "loadDB", tableName, keyName, keyValue, noInsert)
-    skynet.call(redis_srv, "lua", "loadDB", tableName, keyName, keyValue, ret)
+    --skynet.call(redis_srv, "lua", "loadDB", tableName, keyName, keyValue, ret)
     return ret
 end
 
 ---! update to redis, and mysql; 直接覆盖
 function CMD.updateDB (tableName, keyName, keyValue, fieldName, fieldValue)
     local ret = skynet.call(mysql_srv, "lua", "updateDB", tableName, keyName, keyValue, fieldName, fieldValue)
-    ret = ret and skynet.call(redis_srv, "lua", "updateDB", tableName, keyName, keyValue, fieldName, fieldValue)
+    --ret = ret and skynet.call(redis_srv, "lua", "updateDB", tableName, keyName, keyValue, fieldName, fieldValue)
     return ret
 end
 
 ---! 增量修改
 function CMD.deltaDB (tableName, keyName, keyValue, fieldName, deltaValue)
     local ret = skynet.call(mysql_srv, "lua", "deltaDB", tableName, keyName, keyValue, fieldName, deltaValue)
-    ret = ret and skynet.call(redis_srv, "lua", "deltaDB", tableName, keyName, keyValue, fieldName, deltaValue)
+    --ret = ret and skynet.call(redis_srv, "lua", "deltaDB", tableName, keyName, keyValue, fieldName, deltaValue)
     return ret
 end
 
@@ -63,7 +63,7 @@ skynet.start(function()
     end)
 
     ---! 启动 redis & mysql 服务
-    redis_srv = skynet.newservice("RedisService")
+    --redis_srv = skynet.newservice("RedisService")
     mysql_srv = skynet.newservice("MySQLService")
 
     ---! 注册自己的地址

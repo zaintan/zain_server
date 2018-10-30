@@ -9,9 +9,10 @@ message ProtoInfo {
     }
 
     enum ProtoSubType {
-        HALL     = 1;//大厅消息
-        ALLOC    = 2;//创建 加入房间消息
-        ROOM     = 3;//房间内消息
+        GATE     = 1;
+        HALL     = 2;//大厅消息
+        ALLOC    = 3;//创建 加入房间消息
+        ROOM     = 4;//房间内消息
     }
 
     required ProtoMainType    main_type       = 1;
@@ -78,4 +79,17 @@ message JoinRoomRoomResponse {
     optional int32     remain_cards   = 8;
 
     repeated RoomUserInfo  players    = 9;
+}
+
+message HeartRequest {
+    
+}
+
+message HeartResponse {
+    
+}
+
+message CommonTipsPush {
+    optional int32    type          = 1;// 1 弹窗;2 txt飘字
+    optional string   content       = 2;
 }

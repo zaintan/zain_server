@@ -3,6 +3,7 @@ local skynet    = require "skynet"
 local socket    = require "skynet.socket"
 ---! 帮助库
 local packetHelper  = (require "PacketHelper").create("protos/ZainCommon.pb")
+local Msg           = (require "protos.Msg").init()
 
 local class = {mt = {}}
 class.mt.__index = class
@@ -32,21 +33,20 @@ function class.create(info)
     skynet.call(self.gate, "lua", "forward", self.client_fd)
     skynet.fork(function ()
         while true do 
-            -- 3 seconds to send heart beat
-            -- 10 seconds to break
-            if self:timeoutCheck(3,  10) then 
+            -- 2 seconds 检查一次
+            -- 10 seconds 都没有收到过包  就认为掉线直接踢掉
+            if self:timeoutCheck(10) then 
+                self:kickMe()
                 return 
             end 
-            self:sendClientPacket(self:packHeartBeat())
-            skynet.sleep(heartbeat * 100)
+            skynet.sleep(2 * 100)
         end 
     end)
     return self
 end
 
-function class:timeoutCheck( heartbeat, timeout )
+function class:timeoutCheck(timeout )
     if skynet.time() - self.last_update >= timeout then 
-        self:kickMe()
         return true
     end 
 end
@@ -84,43 +84,79 @@ function class:sendClientPacket( packet )
     end 
 end
 
+function class:sendClientMsg(mainType,subType,protoName,data)
+    local body   = packetHelper:encodeMsg("Zain."..protoName, data)
+    local packet = packetHelper:makeProtoData(mainType, subType, string.pack(">I2",Msg.NameToId[protoName])..body)
+    self:sendClientPacket(packet)
+end
+
 function class:handlerAllocRequest(msg, data)
     -- body
 end
 
 function class:handlerHallRequest(msg, data)
     -- body
+--    local msgId   = string.unpack(">I2",msg)
+--    if msgId == 1 then --login
+--        local loginData = packetHelper:decodeMsg(Msg.IdToName[msgId], string.sub(msg,3))
+--    end 
 end
 
 function class:handlerRoomRequest(msg, data)
     -- body
 end
 
-local ComandFuncMap = {
-    [1] = class.handlerHallRequest;
-    [2] = class.handlerAllocRequest;
-    [3] = class.handlerRoomRequest;
+function class:handlerHeartRequest(args)
+    self:sendClientMsg(2,1,"HeartResponse",{})
+end
+
+
+local GateComandFuncMap = {
+    [4] = class.handlerHeartRequest;--心跳
 }
+
+function class:handlerGateRequest(msg, data)
+    local msgId    = string.unpack(">I2",msg)
+    local f        = GateComandFuncMap[msgId]
+    if f then 
+        local args = packetHelper:decodeMsg(Msg.IdToName[msgId], string.sub(msg, 3))
+        return f(self,args)
+    else--非法请求
+        self:sendErrorTip("Invalid Gate Request")
+    end 
+end
+
+local ComandFuncMap = {
+    [1] = class.handlerGateRequest;
+    [2] = class.handlerHallRequest;
+    [3] = class.handlerAllocRequest;
+    [4] = class.handlerRoomRequest;
+}
+
+
 
 function class:command_handler(msg)
     self:active()
     --解析包头 转发处理消息 做对应转发
-    local args = packetHelper:decodeMsg("ZainCommon.ProtoInfo",msg)
-    if args.mainType == 1 or args.mainType == 3 then 
+    local args = packetHelper:decodeMsg("Zain.ProtoInfo",msg)
+    if args.mainType == 1 or args.mainType == 3 then --request or upload
         local f = ComandFuncMap[args.subType]
         if f then 
             return f(self, msg, args)
         else--非法请求
-
+            self:sendErrorTip(string.format("Invalid Request! subType = %d,subType must be [1,4]", args.subType))
         end 
     else
         --非法请求
+        self:sendErrorTip(string.format("Invalid Request! mainType = %d,mainType must be 1 or 3", args.mainType))
     end 
 end
 
-function class:packHeartBeat()
-    return ""
+function class:sendErrorTip(content, type)
+    local data = {}
+    data.type    = type or 1
+    data.content = content or ""
+    self:sendClientMsg(4,1,"CommonTipsPush", data)
 end
-
 
 return class
