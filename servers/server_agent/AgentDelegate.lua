@@ -3,7 +3,7 @@ local skynet    = require "skynet"
 local socket    = require "skynet.socket"
 ---! 帮助库
 local packetHelper  = (require "PacketHelper").create("protos/ZainCommon.pb")
-local Msg           = (require "protos.Msg").init()
+local ProtoHelper   = (require "ProtoHelper").init()
 
 local class = {mt = {}}
 class.mt.__index = class
@@ -86,7 +86,7 @@ end
 
 function class:sendClientMsg(mainType,subType,protoName,data)
     local body   = packetHelper:encodeMsg("Zain."..protoName, data)
-    local packet = packetHelper:makeProtoData(mainType, subType, string.pack(">I2",Msg.NameToId[protoName])..body)
+    local packet = packetHelper:makeProtoData(mainType, subType, string.pack(">I2",ProtoHelper.NameToId[protoName])..body)
     self:sendClientPacket(packet)
 end
 
@@ -98,7 +98,7 @@ function class:handlerHallRequest(msg, data)
     -- body
 --    local msgId   = string.unpack(">I2",msg)
 --    if msgId == 1 then --login
---        local loginData = packetHelper:decodeMsg(Msg.IdToName[msgId], string.sub(msg,3))
+--        local loginData = packetHelper:decodeMsg(ProtoHelper.IdToName[msgId], string.sub(msg,3))
 --    end 
 end
 
@@ -119,7 +119,7 @@ function class:handlerGateRequest(msg, data)
     local msgId    = string.unpack(">I2",msg)
     local f        = GateComandFuncMap[msgId]
     if f then 
-        local args = packetHelper:decodeMsg(Msg.IdToName[msgId], string.sub(msg, 3))
+        local args = packetHelper:decodeMsg(ProtoHelper.IdToName[msgId], string.sub(msg, 3))
         return f(self,args)
     else--非法请求
         self:sendErrorTip("Invalid Gate Request")
