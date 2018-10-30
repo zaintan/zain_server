@@ -111,8 +111,11 @@ function class:handlerHeartRequest(args)
 end
 
 function class:handlerLoginRequest(args)
+    if not args then 
+        self:sendErrorTip("Invalid Login Request!")
+        return
+    end 
     skynet.error("handlerLoginRequest:",args.login_type,args.token)
-
     self:sendErrorTip("Invalid Gate Request")
 end
 
@@ -126,7 +129,7 @@ function class:handlerGateRequest(msg, args)
     local msgId    = args.msg_id
     local f        = GateComandFuncMap[msgId]
     if f then 
-        local args = packetHelper:decodeMsg(ProtoHelper.IdToName[msgId], msg)
+        local args = packetHelper:decodeMsg(ProtoHelper.IdToName[msgId], args.msg_body)
         return f(self,args)
     else--非法请求
         self:sendErrorTip("Invalid Gate Request")
