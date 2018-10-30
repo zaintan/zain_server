@@ -37,7 +37,7 @@ local function do_make_mysql_conn (host)
         resume()
         return true
     else
-        skynet.error("can't connect to mysql ", conf.host, conf.port)
+        Log.e("MySQL","can't connect to mysql %s:%d", conf.host, conf.port)
     end
 end
 
@@ -141,7 +141,7 @@ skynet.start(function()
                 skynet.ret(skynet.pack(ret))
             end
         else
-            skynet.error("unknown command ", cmd)
+            Log.e("MySQL","unknown command:%d", cmd)
         end
     end)
 

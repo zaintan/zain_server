@@ -39,6 +39,7 @@ lua_path    = _skynet.."lualib/?.lua;"..app_root.."?.lua;".._root .."algos/?.lua
 lua_cpath   = _skynet.."luaclib/?.so;"..app_root.."cservice/?.so"
 luaservice  = _skynet.."service/?.lua;".. app_root .. "?.lua;" .._root.."services/?.lua;".._root.."managers/?.lua"
 lualoader   = _skynet.."lualib/loader.lua"
+preload     = _root.."preload/".."init.lua"	-- run preload.lua before every lua service run
 start       = "main"
 
 ---!  snax用到的参数

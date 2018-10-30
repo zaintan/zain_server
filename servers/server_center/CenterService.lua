@@ -46,7 +46,11 @@ function CMD.getStat ()
 end
 
 function CMD.login( args )
-    return {"status" = "ok";}
+    if true then
+        Log.i("CenterService","handleLoginRequest")
+        Log.dump("CenterService", args)
+        return {"status" = "ok";}
+    end 
 end
 
 ---! 服务的启动函数
@@ -63,7 +67,7 @@ skynet.start(function()
                 skynet.ret(skynet.pack(ret))
             end
         else
-            skynet.error("unknown command ", cmd)
+            Log.e("CenterService","unknown command:%d", cmd)
         end
     end)
 
