@@ -45,6 +45,10 @@ function CMD.getStat ()
 
 end
 
+function CMD.login( args )
+    return {"status" = "ok";}
+end
+
 ---! 服务的启动函数
 skynet.start(function()
     ---! 初始化随机数

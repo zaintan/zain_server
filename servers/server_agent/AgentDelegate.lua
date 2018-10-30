@@ -15,6 +15,8 @@ class.mt.__index = class
     address;
     agent;
     appName;
+    centerApp;
+    allocApp;
 }]]--
 function class.create(info)
 	local self = {}
@@ -26,7 +28,6 @@ function class.create(info)
 
     self.agentSign   = os.time()
     --self.m_bIsLogin  = false
-
     self:active()
 
     Log.i("Agent","CMD start called on fd %d",self.client_fd)
@@ -118,8 +119,14 @@ function class:handlerLoginRequest(args)
     Log.i("Agent","handlerLoginRequest")
     Log.dump("Agent",args)
     --self:sendErrorTip("Invalid Gate Request")
+    local ok,msg = pcall(cluster.call, self.centerApp, "CenterService", "login", args)
+    if ok then 
+        Log.i("Agent","登录中心服返回验证:")
+        Log.dump("Agent", msg)
+    else
+        self:sendErrorTip("链接中心服失败!")
+    end 
 end
-
 
 local GateComandFuncMap = {
     [4] = class.handlerHeartRequest;--心跳

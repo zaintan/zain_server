@@ -11,6 +11,10 @@ local NumSet       = require "NumSet"
 
 local myInfo      = nil
 local nodeInfoSvr = nil
+
+local allocApp    = nil
+local centerApp   = nil 
+
 ---! gateserver's gate service
 local gate        = nil
 ---! all agents
@@ -49,6 +53,8 @@ function SOCKET.open( fd, addr )
     info.address    = string.gsub(addr, ":%d+", "")
     info.agent      = agent
     info.appName    = myInfo.appName
+    info.centerApp  = centerApp
+    info.allocApp   = allocApp
 
     tcpAgents:addObject(info, fd)
 
@@ -136,6 +142,9 @@ local function startWatch ()
     skynet.call(nodeInfoSvr, "lua", "updateConfig", skynet.self(), "WatchDog")
 
     myInfo = skynet.call(nodeInfoSvr, "lua", "getConfig", "nodeInfo")
+
+    centerApp = skynet.call(nodeInfoSvr, "lua", "getConfig", "server_center")[1]
+    allocApp  = skynet.call(nodeInfoSvr, "lua", "getConfig", "server_alloc")[1]
     
     ---! 启动gate
     local publicAddr = "0.0.0.0"
