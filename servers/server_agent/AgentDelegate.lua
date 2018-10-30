@@ -115,7 +115,8 @@ function class:handlerLoginRequest(args)
         self:sendErrorTip("Invalid Login Request!")
         return
     end 
-    --skynet.error("handlerLoginRequest:",args.login_type,args.token)
+    Log.i("Agent","handlerLoginRequest")
+    Log.dump("Agent",args)
     --self:sendErrorTip("Invalid Gate Request")
 end
 
