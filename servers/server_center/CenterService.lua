@@ -8,9 +8,9 @@ local skynet    = require "skynet"
 local cluster   = require "skynet.cluster"
 
 ---! 帮助库
-local clsHelper    = require "ClusterHelper"
-local filterHelper = require "FilterHelper"
-local strHelper = require "StringHelper"
+--local clsHelper    = require "ClusterHelper"
+--local filterHelper = require "FilterHelper"
+--local strHelper    = require "StringHelper"
 
 ---! 全局常量
 local nodeInfo = nil
