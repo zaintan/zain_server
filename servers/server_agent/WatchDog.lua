@@ -39,7 +39,7 @@ function SOCKET.open( fd, addr )
         close_agent(fd)
     end 
 
-    Log.i("WatchDog","tcp agent start fd:%d, addr:%d",fd, addr)
+    Log.i("WatchDog","tcp agent start fd:%d, addr:%s",fd, addr)
     local agent = skynet.newservice("TcpAgent")
 
     local info = {}
@@ -69,7 +69,7 @@ end
 
 ---! @brief error on socket, is this called after we transfer it to agent ?
 function SOCKET.error( fd, msg)
-    Log.e("WatchDog","socket error fd:%d, err:%s", fd, msg)
+    Log.e("WatchDog","socket error fd:%d, err:%s", fd, msg or "")
 
     skynet.timeout(10, function ()
         close_agent(fd)
