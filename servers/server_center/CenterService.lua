@@ -69,7 +69,7 @@ skynet.start(function()
                 skynet.ret(skynet.pack(ret))
             end
         else
-            Log.e("CenterService","unknown command:%d", cmd)
+            Log.e("CenterService","unknown command:%s", cmd)
         end
     end)
 

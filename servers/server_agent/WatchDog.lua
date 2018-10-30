@@ -129,7 +129,7 @@ local function registerDispatch()
                     skynet.ret(skynet.pack(ret))
                 end 
             else 
-                Log.e("WatchDog","unknown command:%d",cmd)
+                Log.e("WatchDog","unknown command:%s",cmd)
             end
         end
     end)

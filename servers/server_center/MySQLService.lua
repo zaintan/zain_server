@@ -141,7 +141,7 @@ skynet.start(function()
                 skynet.ret(skynet.pack(ret))
             end
         else
-            Log.e("MySQL","unknown command:%d", cmd)
+            Log.e("MySQL","unknown command:%s", cmd)
         end
     end)
 

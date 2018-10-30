@@ -58,7 +58,7 @@ skynet.start(function()
                 skynet.ret(skynet.pack(ret))
             end
         else
-            Log.e("DBService","unknown command:%d", cmd)
+            Log.e("DBService","unknown command:%s", cmd)
         end
     end)
 

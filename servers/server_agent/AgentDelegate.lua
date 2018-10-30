@@ -120,7 +120,7 @@ function class:handlerLoginRequest(args)
     Log.i("Agent","handlerLoginRequest")
     Log.dump("Agent",args)
     --self:sendErrorTip("Invalid Gate Request")
-    local ok,msg = pcall(cluster.call, self.centerApp, ".CenterService","lua", "login", args)
+    local ok,msg = pcall(cluster.call, self.centerApp, ".CenterService", "login", args)
     if ok then 
         Log.i("Agent","登录中心服返回验证:")
         Log.dump("Agent", msg)
