@@ -2,7 +2,7 @@ PROTO_PATH=.
 
 .PHONY : all clean
 
-PROTOS = CGGame bbb
+PROTOS = ZainCommon
 
 all : $(foreach v, $(PROTOS), $(v).pb)
 
