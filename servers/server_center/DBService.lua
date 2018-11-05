@@ -48,7 +48,7 @@ end
 skynet.start(function()
     ---! 初始化随机数
     math.randomseed( tonumber(tostring(os.time()):reverse():sub(1,6)) )
-
+    --skynet.register(".DBService")
     ---! 注册skynet消息服务
     skynet.dispatch("lua", function(_,_, cmd, ...)
         local f = CMD[cmd]

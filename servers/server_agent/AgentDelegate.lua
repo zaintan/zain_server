@@ -29,6 +29,7 @@ function class.create(info)
 
     self.agentSign   = os.time()
     --self.m_bIsLogin  = false
+    --self.profile     = {}
     self:active()
 
     Log.i("Agent","CMD start called on fd %d",self.client_fd)
@@ -63,14 +64,14 @@ function class:kickMe()
 end
 
 function class:quit()
-    if self.connApp and self.connAddr then
-        --下线通知 中心服 和 游戏服
-        local flg, ret = pcall(cluster.call, self.connApp, self.connAddr, "agentQuit",
-                                self.FUserCode, self.agentSign)
-        if not flg or not ret then
-            self:kickMe()
-        end
-    end
+    Log.i("Agent","玩家下线!")
+    --下线通知 中心服 和 游戏服
+    local ok, msg = pcall(cluster.call, self.centerApp, ".CenterService", "logout",
+                            self.FUserCode, self.agentSign)
+
+    if self.gameApp and self.gameAddr then 
+        pcall(cluster.call, self.gameApp, self.gameAddr, "offline")
+    end 
 
     if self.client_fd then 
         socket.close(self.client_fd)
@@ -93,10 +94,18 @@ function class:sendClientMsg(main_type,sub_type,protoName,data)
 end
 
 function class:handlerAllocRequest(msg, args)
+    if not self:hadLogin() then 
+        self:sendErrorTip("您还未登录!")
+        return
+    end     
     -- body
 end
 
 function class:handlerHallRequest(msg, args)
+    if not self:hadLogin() then 
+        self:sendErrorTip("您还未登录!")
+        return
+    end     
     -- body
 --    local msgId   = string.unpack(">I2",msg)
 --    if msgId == 1 then --login
@@ -105,7 +114,15 @@ function class:handlerHallRequest(msg, args)
 end
 
 function class:handlerRoomRequest(msg, args)
-    -- body
+    if not self:hadLogin() then 
+        self:sendErrorTip("您还未登录!")
+        return
+    end 
+
+    local ok,ret = pcall(cluster.call, self.gameApp, self.gameAddr, "onRequest", msg)
+    if not ok then 
+        self:sendErrorTip("链接逻辑服失败!")
+    end 
 end
 
 function class:handlerHeartRequest(args)
@@ -114,16 +131,23 @@ end
 
 function class:handlerLoginRequest(args)
     if not args then 
-        self:sendErrorTip("Invalid Login Request!")
+        self:sendErrorTip("非法登录请求参数!")
         return
     end 
-    Log.i("Agent","handlerLoginRequest")
+    if self:hadLogin() then 
+        self:sendErrorTip("不要重复登录!")
+        return 
+    end 
+
+    Log.i("Agent","handlerLoginRequest:")
     Log.dump("Agent",args)
+
     --self:sendErrorTip("Invalid Gate Request")
     local ok,msg = pcall(cluster.call, self.centerApp, ".CenterService", "login", args)
     if ok then 
         Log.i("Agent","登录中心服返回验证:")
         Log.dump("Agent", msg)
+        self.userid = msg.userid
     else
         self:sendErrorTip("链接中心服失败!")
     end 
@@ -176,6 +200,10 @@ function class:sendErrorTip(content, type)
     data.type    = type or 1
     data.content = content or ""
     self:sendClientMsg(4,1,"CommonTipsPush", data)
+end
+
+function class:hadLogin()
+    return self.userid ~= nil
 end
 
 return class
