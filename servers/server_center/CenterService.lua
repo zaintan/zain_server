@@ -76,7 +76,7 @@ values('tzy','zaintan','','1','10','1000','3','0',NOW(),NOW());
 ]]
 local function registerGuestUser(userInfo)
     local sqlStr = string.format("insert into TUser(FPlatformID,FUserName,FHeadUrl,FSex,FDiamond,FGold,FPlatformType,FGameIndex,FRegDate,FLastLoginTime) 
-                                    values('%s','%s','%s','%d','%d','%d','%d','%d','%s','%s');", 
+                                    values('%s','%s','%s','%d','%d','%d','%d','%d','%s','%s'");, 
             info.FPlatformID,info.FUserName,info.FHeadUrl,info.FSex,info.FDiamond,info.FGold,info.FPlatformType,info.FGameIndex,"NOW()","NOW()");
     
     local pRet   = skynet.call(getDBAddr(), "lua", "execDB", sqlStr)
