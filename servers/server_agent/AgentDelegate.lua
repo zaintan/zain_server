@@ -153,12 +153,12 @@ function class:handlerLoginRequest(args)
             local response = {}
             response.status   = 0
             local t = {}
-            t.user_id      = msg.FUserID
-            t.user_name    = msg.FUserName
-            t.head_img_url = msg.FHeadUrl
-            t.sex          = msg.FSex
-            t.diamond      = msg.FDiamond
-            t.gold         = msg.FGold
+            t.user_id      = msg[2].FUserID
+            t.user_name    = msg[2].FUserName
+            t.head_img_url = msg[2].FHeadUrl
+            t.sex          = msg[2].FSex
+            t.diamond      = msg[2].FDiamond
+            t.gold         = msg[2].FGold
             response.user_info = t
             self:sendClientMsg(2,1,"LoginResponse",response)
         else 

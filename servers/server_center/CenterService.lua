@@ -103,7 +103,7 @@ local function onLoginSuccess( pUserInfo, source )
     pUserInfo.online    = true
     pUserInfo.agentAddr = source
     --向allocServer查询 是否已经分配房间了
-    return {status = 0;}
+    return {0;pUserInfo;}
 end
 
 local function onLoginFalid( errCode )
