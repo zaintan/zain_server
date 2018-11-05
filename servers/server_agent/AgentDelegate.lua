@@ -67,7 +67,7 @@ function class:quit()
     Log.i("Agent","玩家下线!")
     --下线通知 中心服 和 游戏服
     local ok, msg = pcall(cluster.call, self.centerApp, ".CenterService", "logout",
-                            self.FUserCode, self.agentSign)
+                            self.FUserID)
 
     if self.gameApp and self.gameAddr then 
         pcall(cluster.call, self.gameApp, self.gameAddr, "offline")
@@ -147,7 +147,23 @@ function class:handlerLoginRequest(args)
     if ok then 
         Log.i("Agent","登录中心服返回验证:")
         Log.dump("Agent", msg)
-        self.userid = msg.userid
+        if msg[1] == 0 then --登录成功
+            self.FUserID = msg.FUserID
+            --return to client 
+            local response = {}
+            response.status   = 0
+            local t = {}
+            t.user_id      = msg.FUserID
+            t.user_name    = msg.FUserName
+            t.head_img_url = msg.FHeadUrl
+            t.sex          = msg.FSex
+            t.diamond      = msg.FDiamond
+            t.gold         = msg.FGold
+            response.user_info = t
+            self:sendClientMsg(2,1,"LoginResponse",response)
+        else 
+            self:sendErrorTip(msg[2],msg[1])
+        end 
     else
         self:sendErrorTip("链接中心服失败!")
     end 
@@ -203,7 +219,7 @@ function class:sendErrorTip(content, type)
 end
 
 function class:hadLogin()
-    return self.userid ~= nil
+    return self.FUserID ~= nil
 end
 
 return class
