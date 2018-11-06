@@ -216,7 +216,7 @@ function class:outputProfile(main_type,msg_id)
                 info.respTime = os.clock()
                 local waitTime,procTime = info.processTime - info.recvTime, info.respTime - info.processTime
                 --self.profile[request_id] = nil
-                Log.i("Agent","msg_id = %d, waitTime = %dms, procTime = %dms",math.ceil(waitTime*1000),math.ceil(procTime*1000))
+                Log.i("Agent","msg_id = %d, waitTime = %d ms, procTime = %d ms",request_id,math.ceil(waitTime*1000),math.ceil(procTime*1000))
             end 
         end 
     end 
