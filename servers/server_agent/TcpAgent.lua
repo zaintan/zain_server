@@ -48,9 +48,9 @@ skynet.register_protocol {
 	end,
 	dispatch = function (session, address, text)
         skynet.ignoreret()
-
+        local recvTime = os.clock()
         local worker = function ()
-            agent:command_handler(text)
+            agent:command_handler(text,recvTime)
         end
 
         xpcall( function()

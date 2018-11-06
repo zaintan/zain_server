@@ -13,6 +13,8 @@ M.IdToName = {
 };
 M.NameToId = nil;
 
+M.ResponseBase = 10000;
+
 function M.init()
 	if M.NameToId == nil then 
 		M.NameToId = {}

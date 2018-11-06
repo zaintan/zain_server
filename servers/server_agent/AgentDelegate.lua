@@ -29,7 +29,7 @@ function class.create(info)
 
     self.agentSign   = os.time()
     --self.m_bIsLogin  = false
-    --self.profile     = {}
+    self.profile     = {}
     self:active()
 
     Log.i("Agent","CMD start called on fd %d",self.client_fd)
@@ -88,8 +88,11 @@ function class:sendClientPacket( packet )
 end
 
 function class:sendClientMsg(main_type,sub_type,protoName,data)
-    local body   = packetHelper:encodeMsg("Zain."..protoName, data)
-    local packet = packetHelper:makeProtoData(main_type, sub_type, ProtoHelper.NameToId[protoName], body)
+    local body    = packetHelper:encodeMsg("Zain."..protoName, data)
+    local msg_id  = ProtoHelper.NameToId[protoName]
+    self:outputProfile(main_type,msg_id)
+
+    local packet = packetHelper:makeProtoData(main_type, sub_type,msg_id , body)
     self:sendClientPacket(packet)
 end
 
@@ -192,12 +195,39 @@ local ComandFuncMap = {
     [4] = class.handlerRoomRequest;
 }
 
+function class:inputProfile( args , recvTime )
+    --rpc time profile
+    if args.main_type == 1 then 
+        local msgId  = args.msg_id
+        if not self.profile[msg_id] then 
+            self.profile[msg_id] = {}
+        end 
+        self.profile[msg_id].recvTime    = recvTime
+        self.profile[msg_id].processTime = os.clock()
+    end 
+end
+
+function class:outputProfile(main_type,msg_id)
+    if main_type == 2 then 
+        if msg_id > ProtoHelper.ResponseBase then 
+            local request_id = msg_id - ProtoHelper.ResponseBase
+            local info = self.profile[request_id]
+            if info then 
+                info.respTime = os.clock()
+                local waitTime,procTime = info.processTime - info.recvTime, info.respTime - info.processTime
+                --self.profile[request_id] = nil
+                Log.i("Agent","msg_id = %d, waitTime = %dms, procTime = %dms",math.ceil(waitTime*1000),math.ceil(procTime*1000))
+            end 
+        end 
+    end 
+end
 
 
-function class:command_handler(msg)
+function class:command_handler(msg, recvTime)
     self:active()
     --解析包头 转发处理消息 做对应转发
     local args = packetHelper:decodeMsg("Zain.ProtoInfo",msg)
+    self:inputProfile(args, recvTime)
     if args.main_type == 1 or args.main_type == 3 then --request or upload
         local f = ComandFuncMap[args.sub_type]
         if f then 
