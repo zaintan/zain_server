@@ -198,7 +198,7 @@ local ComandFuncMap = {
 function class:inputProfile( args , recvTime )
     --rpc time profile
     if args.main_type == 1 then 
-        local msgId  = args.msg_id
+        local msg_id  = args.msg_id
         if not self.profile[msg_id] then 
             self.profile[msg_id] = {}
         end 
