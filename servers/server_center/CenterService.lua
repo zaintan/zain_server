@@ -20,9 +20,10 @@ local tokenMap     = NumSet.create()
 
 local CacheLimitCount = 10000
 ---! 全局常量
-local nodeInfo = nil
-local appName  = nil
-local dbAddr   = nil
+local nodeInfo     = nil
+local appName      = nil
+local dbAddr       = nil
+local allocAppName = nil
 
 local LOGTAG   = "CenterService"
 
@@ -99,10 +100,23 @@ local function registerGuestUser(userInfo)
     return userInfo
 end
 
-local function onLoginSuccess( pUserInfo, source )
+local function onLoginSuccess( pUserInfo, source, appName )
     pUserInfo.online    = true
+    
+    if pUserInfo.agentAddr and pUserInfo.appName
+        and pUserInfo.agentAddr ~= source
+        and pUserInfo.appName ~= appName then 
+        --已经登录 多点重复登录 要踢下线
+        pcall(cluster.call, pUserInfo.appName, pUserInfo.agentAddr, "disconnect",false, false)
+    end 
     pUserInfo.agentAddr = source
+    pUserInfo.appName   = appName
     --向allocServer查询 是否已经分配房间了
+    --roomId
+    local status,roomId = pcall(cluster.call, allocAppName, ".AllocService", "queryUser", pUserInfo.FUserID)
+    if status and roomId then 
+        pUserInfo.roomId = roomId
+    end 
     return {0;pUserInfo;}
 end
 
@@ -139,7 +153,7 @@ function CMD.getStat()
 end
 
 
-function CMD.login(source, args )
+function CMD.login(source, args, appName)
     --if true then
     Log.i(LOGTAG,"handleLoginRequest")
     Log.dump(LOGTAG, args)
@@ -155,7 +169,7 @@ function CMD.login(source, args )
     if args.login_type == 1 then --游客登录
         local userid =  tokenMap[args.token]
         if userid then --缓存里查到了
-            return onLoginSuccess(userMap[userid], source)
+            return onLoginSuccess(userMap[userid], source, appName)
         else--缓存里面没有  需要去查数据库
             local sqlStr = string.format("select * from TUser where FPlatformID=\"%s\";",args.token)
             local pRet   = skynet.call(getDBAddr(), "lua", "execDB", sqlStr)
@@ -165,13 +179,13 @@ function CMD.login(source, args )
                     --register
                     local registerRet = registerGuestUser(args)
                     if registerRet then 
-                        return onLoginSuccess(registerRet, source)
+                        return onLoginSuccess(registerRet, source, appName)
                     else
                         return onLoginFalid(-3)
                     end  
                 else
                     --login
-                    return onLoginSuccess(cacheUser(pRet[1]), source)
+                    return onLoginSuccess(cacheUser(pRet[1]), source, appName)
                 end
             else--找不到
                 return onLoginFalid(-4)
@@ -180,15 +194,19 @@ function CMD.login(source, args )
     end 
 end
 
-function CMD.logout(source, uid)
+----注意清缓存
+function CMD.logout(source, uid, appName)
     if not uid then 
         return false
     end 
 
     local userInfo = userMap[uid]
-    if userInfo then 
-        userInfo.online = false
+    if userInfo and userInfo.agentAddr == source and userInfo.appName == appName then 
+        userInfo.online    = false
+        userInfo.agentAddr = nil
+        userInfo.appName   = nil
     end 
+
     return true
 end
 
@@ -218,8 +236,8 @@ skynet.start(function()
     skynet.call(nodeInfo, "lua", "updateConfig", skynet.self(), "CenterService")
 
     ---! 获得appName
-    appName = skynet.call(nodeInfo, "lua", "getConfig", "nodeInfo", "appName")
-
+    appName      = skynet.call(nodeInfo, "lua", "getConfig", "nodeInfo", "appName")
+    allocAppName = skynet.call(nodeInfo, "lua", "getConfig", "server_alloc")[1]
     ---! ask all nodes to register
     skynet.fork(CMD.askAll)
 end)

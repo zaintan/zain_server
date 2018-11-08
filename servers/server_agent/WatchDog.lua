@@ -21,12 +21,12 @@ local gate        = nil
 local tcpAgents   = NumSet.create()
 
 ---! @brief close agent on socket fd
-local function close_agent( fd )
+local function close_agent( fd, bNotiCenter, bNotiGame)
     local info = tcpAgents:getObject(fd)
     if info then 
         tcpAgents:removeObject(fd)
 
-        pcall(skynet.send, info.agent, "lua", "disconnect")
+        pcall(skynet.send, info.agent, "lua", "disconnect", bNotiCenter, bNotiGame)
     else
         Log.e("WatchDog","unable to close agent, fd = ",fd)
     end 
@@ -40,7 +40,7 @@ local SOCKET = {}
 function SOCKET.open( fd, addr )
     local info = tcpAgents:getObject(fd)
     if info then 
-        close_agent(fd)
+        close_agent(fd, true, true)
     end 
 
     Log.i("WatchDog","tcp agent start fd:%d, addr:%s",fd, addr)
@@ -67,7 +67,7 @@ function SOCKET.close( fd )
     Log.i("WatchDog","socket close:%d", fd)
     --0.01s * 10 = 0.1s
     skynet.timeout(10, function ()
-        close_agent(fd)
+        close_agent(fd, true, true)
     end)
 
     return ""
@@ -78,7 +78,7 @@ function SOCKET.error( fd, msg)
     Log.e("WatchDog","socket error fd:%d, err:%s", fd, msg or "")
 
     skynet.timeout(10, function ()
-        close_agent(fd)
+        close_agent(fd, true, true)
     end)
 end
 
@@ -95,9 +95,9 @@ end
 ---! skynet service handlings
 local CMD = {}
 ---! @brief this function may not be called after we transfer fd to agent
-function CMD.closeAgent(fd)
+function CMD.closeAgent(fd,bNotiCenter, bNotiGame)
     skynet.timeout(10, function()
-        close_agent(fd)
+        close_agent(fd,bNotiCenter, bNotiGame)
     end)
     return 0
 end

@@ -60,17 +60,19 @@ end
 
 function class:kickMe()
     Log.i("Agent","heartbeat timeout! kick me!")
-    pcall(skynet.send, self.watchdog, "lua", "closeAgent", self.client_fd)
+    pcall(skynet.send, self.watchdog, "lua", "closeAgent", self.client_fd, true, true)
 end
 
-function class:quit()
+function class:quit(bNotiCenter, bNotiGame)
     Log.i("Agent","玩家下线!")
     --下线通知 中心服 和 游戏服
-    local ok, msg = pcall(cluster.call, self.centerApp, ".CenterService", "logout",
-                            self.FUserID)
+    if bNotiCenter then 
+        local ok, msg = pcall(cluster.call, self.centerApp, ".CenterService", "logout",
+                                self.FUserID, self.appName)
+    end 
 
-    if self.gameApp and self.gameAddr then 
-        pcall(cluster.call, self.gameApp, self.gameAddr, "offline")
+    if bNotiGame and self.gameApp and self.gameAddr then 
+        pcall(cluster.call, self.gameApp, self.gameAddr, "offline", self.FUserID, self.appName)
     end 
 
     if self.client_fd then 
@@ -101,7 +103,11 @@ function class:handlerAllocRequest(msg, args)
         self:sendErrorTip("您还未登录!")
         return
     end     
-    -- body
+
+    local status,ret = pcall(cluster.call, self.allocApp, ".AllocService",  "cliRequest" , self.FUserID,args.msg_id, args.msg_body, self.appName, self.agent)
+    if not status then 
+        self:sendErrorTip("链接AllocServer失败!")
+    end 
 end
 
 function class:handlerHallRequest(msg, args)
@@ -114,6 +120,7 @@ function class:handlerHallRequest(msg, args)
 --    if msgId == 1 then --login
 --        local loginData = packetHelper:decodeMsg(ProtoHelper.IdToName[msgId], string.sub(msg,3))
 --    end 
+    self:sendErrorTip("非法请求中心服!")
 end
 
 function class:handlerRoomRequest(msg, args)
@@ -132,13 +139,20 @@ function class:handlerHeartRequest(args)
     self:sendClientMsg(2,1,"HeartResponse",{})
 end
 
+function class:onLoginFailed(errString, errCode)
+    local response = {}
+    response.status     = errCode or -1
+    response.status_tip = errString or ""
+    self:sendClientMsg(2,1,"LoginResponse",response)
+end
+
 function class:handlerLoginRequest(args)
     if not args then 
-        self:sendErrorTip("非法登录请求参数!")
+        self:onLoginFailed("非法登录请求参数!")
         return
     end 
     if self:hadLogin() then 
-        self:sendErrorTip("不要重复登录!")
+        self:onLoginFailed("不要重复登录!")
         return 
     end 
 
@@ -146,7 +160,7 @@ function class:handlerLoginRequest(args)
     Log.dump("Agent",args)
 
     --self:sendErrorTip("Invalid Gate Request")
-    local ok,msg = pcall(cluster.call, self.centerApp, ".CenterService", "login", args)
+    local ok,msg = pcall(cluster.call, self.centerApp, ".CenterService", "login", args, self.appName)
     if ok then 
         Log.i("Agent","登录中心服返回验证:")
         Log.dump("Agent", msg)
@@ -162,13 +176,14 @@ function class:handlerLoginRequest(args)
             t.sex          = msg[2].FSex
             t.diamond      = msg[2].FDiamond
             t.gold         = msg[2].FGold
+            t.room_id      = msg[2].roomId
             response.user_info = t
             self:sendClientMsg(2,1,"LoginResponse",response)
         else 
-            self:sendErrorTip(msg[2],msg[1])
+            self:onLoginFailed(msg[2],msg[1])
         end 
     else
-        self:sendErrorTip("链接中心服失败!")
+        self:onLoginFailed("链接中心服失败!")
     end 
 end
 
@@ -203,7 +218,7 @@ function class:inputProfile( args , recvTime )
             self.profile[msg_id] = {}
         end 
         self.profile[msg_id].recvTime    = recvTime
-        self.profile[msg_id].processTime = os.clock()
+        self.profile[msg_id].processTime = skynet.time()
     end 
 end
 
@@ -213,10 +228,13 @@ function class:outputProfile(main_type,msg_id)
             local request_id = msg_id - ProtoHelper.ResponseBase
             local info = self.profile[request_id]
             if info then 
-                info.respTime = os.clock()
+                info.respTime = skynet.time()
                 local waitTime,procTime = info.processTime - info.recvTime, info.respTime - info.processTime
+                waitTime = math.ceil(waitTime*1000)
+                procTime = math.ceil(procTime*1000)
                 --self.profile[request_id] = nil
-                Log.i("Agent","msg_id = %d, waitTime = %d ms, procTime = %d ms",request_id,math.ceil(waitTime*1000),math.ceil(procTime*1000))
+                --精度 0.01s = 10ms
+                Log.i("Agent","msg_id = %d, waitTime = %d ms, procTime = %d ms",request_id,waitTime,procTime)
             end 
         end 
     end 

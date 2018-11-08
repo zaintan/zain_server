@@ -29,13 +29,21 @@ function CMD.start( info )
 end
 
 ---! @brief 通知agent主动结束
-function CMD.disconnect()
-    agent:quit()
+function CMD.disconnect(bNotiCenter, bNotiGame)
+    agent:quit(bNotiCenter,bNotiGame)
 end
 
 ---! send protocal back to user socket
 function CMD.sendClientPacket( packet )
     agent:sendClientPacket(packet)
+end
+
+function CMD.sendClientMsg(...)
+    agent:sendClientMsg(...)
+end
+
+function CMD.sendErrorTip( ... )
+    agent:sendErrorTip(...)
 end
 
 
@@ -48,7 +56,7 @@ skynet.register_protocol {
 	end,
 	dispatch = function (session, address, text)
         skynet.ignoreret()
-        local recvTime = os.clock()
+        local recvTime = skynet.time()
         local worker = function ()
             agent:command_handler(text,recvTime)
         end

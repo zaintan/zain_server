@@ -1,13 +1,13 @@
 ----------------------------------
 ---! @file
----! @brief server_center 的启动配置文件
+---! @brief server_game 的启动配置文件
 ----------------------------------
 local _root		= "./"
 local _skynet	= _root.."../skynet/"
 
----! server_center 用到的参数 从 命令行传的参数
+---! server_game 用到的参数 从 命令行传的参数
 NodeName    =  "$NodeName"
-ServerKind  =  "server_center"
+ServerKind  =  "server_game"
 ServerNo    =  "$ServerNo"
 
 ----------------------------------
@@ -30,7 +30,7 @@ daemon      = nil
 ---!  日志文件
 -- logger      = nil
 --logger      = _root .. "/logs/" .. app_name .. ".log"
-logpath     = _root .. "/logs/center/"
+logpath     = _root .. "/logs/game/"
 ---!  初始启动的模块
 bootstrap   = "snlua bootstrap"
 

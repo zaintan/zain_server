@@ -39,23 +39,71 @@ message RoomUserInfo {
     optional int32     seat_index     = 5;
 }
 
+message ChiGroupCard {
+    optional int32 lou_weave_count    = 1;
+    repeated int32 lou_weave_kind     = 2; //落起组合
+}
+
+//组合子项
+message WeaveItemInfo {
+    optional int32 weave_kind            = 1; //组合类型
+    optional int32 center_card           = 2; //中心扑克
+    optional int32 public_card           = 3; //公开标志
+    optional int32 provide_player        = 4; //供应用户
+    optional int32 hu_xi                 = 5; //组合胡息
+    repeated ChiGroupCard chi_group_card = 6; //吃牌对应的落组合
+    repeated int32 weave_card            = 7;   //实际组合牌--
+    repeated int32 client_special_card   = 8;   //客户端需要特殊处理的牌值
+}
+
+message PlayerCardsInfo {
+    optional bool          has_hands     = 1;
+    optional bool          has_weaves    = 2;
+    optional bool          has_discards  = 3;
+    repeated int32         hands         = 4;
+    repeated int32         discards      = 5;
+    repeated WeaveItemInfo weaves        = 6;
+}
+
+message OperateInfo {
+    repeated int32              ops      = 1;
+    repeated WeaveItemInfo      weaves   = 2;
+    optional int32              target   = 3;
+    optional int32              card     = 4;
+}
+
+message RoundRoomInfo {
+    optional int32     cur_val           = 1;//当前局数 or 当前分数
+    optional int32     remain_num        = 2;//剩余牌数
+    optional int32     total_num         = 3;//总牌数
+    optional int32     cur_banker        = 4;//庄家位置 服务器坐标
+    optional int32     cur_op            = 5;//当前操作玩家坐标
+    repeated int32     player_status     = 6;//玩家操作状态 0:无操作 1:出牌 2:操作
+}
+
 message LoginRequest {
-    required int32     login_type     = 1;
-    optional string    token          = 2;
-    optional int32     platform       = 3; //1=android 2=ios 3=pc
-    optional string    client_version = 4;
-    optional int32     game_index     = 5;
+    required int32     login_type        = 1;
+    optional string    token             = 2;
+    optional int32     platform          = 3; //1=android 2=ios 3=pc
+    optional string    client_version    = 4;
+    optional int32     game_index        = 5;
 }
 
 message LoginResponse {
     required int32         status         = 1;//登录 成功,失败
     optional string        status_tip     = 2;  
     optional AccountInfo   user_info      = 3;  
+    optional int32         room_id        = 4;
 
 }
 
 message CreateRoomRequest { 
-    required int32     game_id        = 1;
+    required int32     create_type        = 1;
+    required int32     game_id            = 2;//游戏id
+    required int32     game_type          = 3;//子玩法id
+    repeated int32     game_rules         = 4;//玩法规则
+    required int32     over_type          = 5;//结束类型  固定局数:1 分数封顶:2 其他...
+    optional int32     over_val           = 6;//值  8,16,24局 or 1000,2000分
 }
 
 message CreateRoomResponse {
@@ -69,17 +117,41 @@ message JoinRoomRequest {
 }
 
 message JoinRoomRoomResponse {
-    required int32     status         = 1;//成功,失败
-    optional string    status_tip     = 2;   
+    optional int32     status              = 1;//成功,失败
+    optional string    status_tip          = 2;   
+    optional int32     game_id             = 3;
+    optional int32     game_type           = 4;
+    optional int32     game_rules          = 5;
+    repeated RoomUserInfo  players         = 6;
+    optional int32     game_status         = 7;//牌局未开始, 牌局小局中, 牌局小局之间等待状态
+    optional int32     play_status         = 8;
+    optional int32     over_type           = 9;//结束类型  固定局数:1 分数封顶:2 其他...
+    optional int32     over_val            = 10;//值  8,16,24局 or 1000,2000分 
 
-    optional string    game_name      = 3;
-    optional int32     room_id        = 4;
-    optional int32     cur_round      = 5;
-    optional int32     total_round    = 6;
-    optional int32     game_status    = 7;
-    optional int32     remain_cards   = 8;
+    optional RoundRoomInfo round_room_info = 11;//牌局中 才会有该信息
+    optional OperateInfo   op_info         = 12;//该玩家有操作才会有信息
+    repeated PlayerCardsInfo cards_info    = 13;//牌局中 才有该信息
+}
 
-    repeated RoomUserInfo  players    = 9;
+message PlayerEnterPush {
+    required RoomUserInfo player           = 1; 
+}
+
+message ReadyRequest {
+    optional bool    ready                 = 1;
+}
+
+message ReadyResponse {
+    optional bool    ready                 = 1;
+}
+
+message ReadyPush {
+    optional bool    ready                 = 1; 
+    optional int32   target                = 2;
+}
+
+message GameStartPush {
+    optional RoundRoomInfo round_room_info = 1;//牌局中 才会有该信息
 }
 
 message HeartRequest {

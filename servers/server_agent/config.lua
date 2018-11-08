@@ -30,7 +30,7 @@ daemon      = nil
 ---!  日志文件
 -- logger      = nil
 --logger      = _root .. "/logs/" .. app_name .. ".log"
-logpath     = _root .. "/logs/"
+logpath     = _root .. "/logs/agent/"
 ---!  初始启动的模块
 bootstrap   = "snlua bootstrap"
 

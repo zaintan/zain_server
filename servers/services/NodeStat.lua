@@ -27,8 +27,18 @@ local function center_info()
 	return ""
 end
 
-local function alloc_info()
-	return ""
+local function alloc_info(nodeInfo,srv)
+	local allocAddr = skynet.call(srv, "lua", "getConfig", "AllocService")
+	if not allocAddr or allocAddr == "" then 
+		return "AllocService has not start yet!"
+	end 
+
+	local stat = skynet.call(allocAddr, "lua", "getStat")
+	local arr  = {nodeInfo.appName}
+	for _,v in ipairs(stat or {}) do
+		table.insert(arr, string.format("name:%s isActive:%s tableNum:%d playerNum:%d",v.appName, tostring(v.active), v.tableNum, v.playerNum))
+	end
+    return strHelper.join(arr, "\n")
 end
 
 local DumpFuncMap = {
