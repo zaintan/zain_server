@@ -35,9 +35,9 @@ logpath     = _root .. "/logs/game/"
 bootstrap   = "snlua bootstrap"
 
 ---!  snlua用到的参数
-lua_path    = _skynet.."lualib/?.lua;"..app_root.."?.lua;".._root .."algos/?.lua;".._root.."helpers/?.lua;".._root.."services/?.lua"
+lua_path    = _skynet.."lualib/?.lua;"..app_root.."?.lua;".._root .."algos/?.lua;".._root.."helpers/?.lua;".._root.."services/?.lua;".._root.."preload/?.lua"
 lua_cpath   = _skynet.."luaclib/?.so;"..app_root.."cservice/?.so"
-luaservice  = _skynet.."service/?.lua;".. app_root .. "?.lua;" .._root.."services/?.lua;".._root.."managers/?.lua"
+luaservice  = _skynet.."service/?.lua;".. app_root .. "?.lua;" .._root.."services/?.lua;"
 lualoader   = _skynet.."lualib/loader.lua"
 preload     = _root.."preload/".."init.lua"	-- run preload.lua before every lua service run
 start       = "main"

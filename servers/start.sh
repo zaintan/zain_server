@@ -7,9 +7,9 @@ sh server_alloc/start.sh node1 0
 
 ### agent servers
 sh server_agent/start.sh node1 0
-sh server_agent/start.sh node1 1
+#sh server_agent/start.sh node1 1
 
 ### gameservers
 sh server_game/start.sh node1 0
-sh server_game/start.sh node1 1
+#sh server_game/start.sh node1 1
 

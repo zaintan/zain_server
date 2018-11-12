@@ -1,20 +1,16 @@
 ----------------------------------
 ---! @file
----! @brief server_alloc 的启动配置文件
+---! @brief client 的启动配置文件
 ----------------------------------
 local _root		= "./"
 local _skynet	= _root.."../skynet/"
 
----! server_alloc 用到的参数 从 命令行传的参数
-NodeName    =  "$NodeName"
-ServerKind  =  "server_alloc"
-ServerNo    =  "$ServerNo"
-
 ----------------------------------
 ---!  自定义参数
 ----------------------------------
-app_name    	= NodeName .. "_" .. ServerKind .. ServerNo
-app_root    	= _root.. ServerKind .."/"
+platformID        = "$platformID"
+app_name    	= "client" .. platformID
+app_root    	= _root.. "client" .."/"
 
 ----------------------------------
 ---!  skynet用到的六个参数
@@ -30,7 +26,7 @@ daemon      = nil
 ---!  日志文件
 -- logger      = nil
 --logger      = _root .. "/logs/" .. app_name .. ".log"
-logpath     = _root .. "/logs/alloc/"
+logpath     = _root .. "/logs/client/"..app_name.."/"
 ---!  初始启动的模块
 bootstrap   = "snlua bootstrap"
 
@@ -40,12 +36,9 @@ lua_cpath   = _skynet.."luaclib/?.so;"..app_root.."cservice/?.so"
 luaservice  = _skynet.."service/?.lua;".. app_root .. "?.lua;" .._root.."services/?.lua;"
 lualoader   = _skynet.."lualib/loader.lua"
 preload     = _root.."preload/".."init.lua"	-- run preload.lua before every lua service run
+
 start       = "main"
 
 ---!  snax用到的参数
 snax    = _skynet.."service/?.lua;".. app_root .. "?.lua;" .._root.."services/?.lua"
-
----!  cluster 用到的参数
-cluster = app_root.."../config/cluster.cfg"
-
 

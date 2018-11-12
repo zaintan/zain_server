@@ -1,4 +1,21 @@
+---! 依赖库
+local skynet    = require "skynet"
+require "skynet.manager"
+local cluster   = require "skynet.cluster"
+---! 帮助库
+local packetHelper  = (require "PacketHelper").create("protos/ZainCommon.pb")
+local ProtoHelper   = (require "ProtoHelper").init()
+---!
+local Player    = require "logic.BaseUser"
+
 local BaseTable = class()
+
+BaseTable.kCliHanderMap = {
+	[5] = "onReady";
+	[6] = "onOutCard";
+	[7] = "onDoOperate";
+	[8] = "onReleaseGame";
+}
 
 function BaseTable:ctor(game_id, game_type, room_id)
     -- body
@@ -9,12 +26,23 @@ end
 
 --根据玩法 解析局数
 function BaseTable:init(rules, over_type, over_val)
+	self:_initClientHanders()
+
 	self.gameRules    = rules
-    self.gameStatus   = 0;-- free 0, wait 200 ,play 100
+    self.gameStatus   = const.GameStatus.FREE
     self.playStatus   = nil;
 
     self.maxPlayerNum = 4
     self.players      = {}
+    return true
+end
+
+function BaseTable:_initClientHanders()
+	local newHanderMap = {}
+	for msg_id,funcName in pairs(self.kCliHanderMap) do
+		newHanderMap[msg_id] = self[funcName]
+	end
+	self.kCliHanderMap = newHanderMap
 end
 
 function BaseTable:getBaseProto()
@@ -44,7 +72,7 @@ end
 
 function BaseTable:getPlayer( uid )
 	for seat,player in ipairs(self.players) do
-		if player.FUserID = uid then 
+		if player.FUserID == uid then 
 			return player
 		end 
 	end
@@ -53,6 +81,15 @@ end
 
 function BaseTable:addUser(uid, appName, agentAddr)
 	---待实现
+	local status,data = pcall(cluster.call, player.appName, ".CenterService",  "query", uid);
+	if status and data and data.FUserID then 
+		retData.appName   = appName
+		retData.agentAddr = agentAddr
+	
+		local seatIndex  = #self.players + 1
+		local player = new(Player, retData, seatIndex)
+		return player
+	end
 	return false
 end
 
@@ -70,12 +107,19 @@ function BaseTable:reconnect(uid, appName, agentAddr)
 	return reconnData
 end
 
-function BaseTable:broadcastMsg(protoName, data, seatIndex )
+
+function BaseTable:broadcastMsg(msgId, data, seatIndex )
 	local exceptSeat = seatIndex or -1
 
 	for seat,player in ipairs(self.players) do
 		if not player:isOffline() and exceptSeat ~= seat then 
-		--local status,ret = pcall(cluster.call, )
+			local status,ret = pcall(cluster.call, 
+								     player.appName, 
+								     player.agentAddr, 
+								     "sendClientMsg", 
+					                 const.ProtoMain.RESPONSE, 
+					                 const.ProtoSub.GAME,msgId, 
+					                 data);
 		end 
 	end
 end
@@ -85,11 +129,12 @@ function BaseTable:offline(uid, appName)
 	local player = self:getPlayer(uid)
 	if player then 
 		if player:offline(appName) then 
-			return
+			return 0
 		end 
 	end 
 
 	--下线失败 节点校验不通过
+	return -1
 end
 --from alloc server
 function BaseTable:join(uid, room_id,appName, agentAddr)
@@ -116,7 +161,7 @@ function BaseTable:join(uid, room_id,appName, agentAddr)
     end 
 
     --推送广播其他玩家 有玩家进来了
-    self:broadcastMsg("PlayerEnterPush",{ player = player:getProto();}, player.seatIndex)
+    self:broadcastMsg(const.MsgId.PlayerEnterPush, {player=player:getProto();}, player.seatIndex)
     --回复自己 加入成功
     local retData   = self:getBaseProto()
     retData.players = {}
@@ -126,16 +171,44 @@ function BaseTable:join(uid, room_id,appName, agentAddr)
     return retData
 end
 --from client
-function BaseTable:onRequest( ... )
-    -- body
+function BaseTable:onRequest( uid, msg_id, msg_body )
+    -- self.FUserID, args.msg_id, args.msg_body
+    local data = packetHelper:decodeMsg("Zain."..ProtoHelper.IdToName[msg_id], msg_body)
+    Log.dump("BaseTable",data)
+
+    local handler = self.kCliHanderMap[msg_id]
+    if handler then 
+    	return handler(self, uid, data)
+    end 
+
+    return -1
 end
 
-function BaseTable:onReady( ... )
-    if self.gameStatus == 0 or self.gameStatus == 200 then 
-
+function BaseTable:onReady( uid, data )
+    if self.gameStatus == const.GameStatus.FREE or self.gameStatus == const.GameStatus.WAIT then 
+    	local player = self:getPlayer(uid)
+    	if player then 
+    		player:setReady(data.ready)
+    		self:broadcastMsg(const.MsgId.ReadyPush,{ready = data.ready; target= player.seatIndex;}, player.seatIndex);
+    		return const.MsgId.ReadyRsp,{status = 0; ready = data.ready;}
+    	else	
+    		Log.e("BaseTable","uid == %d is not in table:%d!", uid, self.roomId)
+    	end 
+    else
+    	return const.MsgId.ReadyRsp,{status = -1; status_tip = "Only Free or Wait State can change ready!"};
     end 
 end
 
+function BaseTable:onReleaseGame( uid, data )
+	-- body
+end
 
+function BaseTable:onDoOperate( uid, data )
+	-- body
+end
+
+function BaseTable:onOutCard( uid, data )
+	-- body
+end
 
 return BaseTable

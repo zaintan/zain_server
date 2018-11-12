@@ -26,6 +26,8 @@ function CMD.askReg()
     skynet.timeout(10, function ()
         CMD.reg()
     end)
+
+    return 0
 end
 
 function CMD.reg()
@@ -34,8 +36,8 @@ end
 
 function CMD.createTable(roomId, data)
     local tableAddr = skynet.newservice("TableService")
-    skynet.call(tableAddr, "lua", "init",roomId, data)
-    return tableAddr
+    local isSuccess = skynet.call(tableAddr, "lua", "init",roomId, data)
+    return (isSuccess == 0) and tableAddr or -1
 end
 
 function CMD.dissolveTable(roomId)
@@ -53,7 +55,7 @@ skynet.start(function()
     skynet.dispatch("lua", function(session, source, cmd, ...)
         local f = CMD[cmd]
         if f then
-            local ret = f(source, ...)
+            local ret = f(...)
             if ret then
                 skynet.ret(skynet.pack(ret))
             end
@@ -69,7 +71,7 @@ skynet.start(function()
     skynet.call(nodeInfo, "lua", "updateConfig", skynet.self(), "GameService")
 
     ---! 获得appName
-    appName = skynet.call(nodeInfo, "lua", "getConfig", "nodeInfo", "appName")
+    appName      = skynet.call(nodeInfo, "lua", "getConfig", "nodeInfo", "appName")
 
     allocAppName = skynet.call(nodeInfo, "lua", "getConfig", "server_alloc")[1]
 

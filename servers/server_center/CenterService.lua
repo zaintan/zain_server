@@ -75,7 +75,7 @@ values('tzy','zaintan','','1','10','1000','3','0',NOW(),NOW());
 |    1000 | tzy         | zaintan   |          |    1 |       10 |  1000 |             3 |          0 | 2018-11-02 | 2018-11-02 17:18:14 |
 +---------+-------------+-----------+----------+------+----------+-------+---------------+------------+------------+---------------------+
 ]]
-local function registerGuestUser(userInfo)
+local function registerGuestUser(info)
     local sqlStr = string.format("insert into TUser(FPlatformID,FUserName,FHeadUrl,FSex,FDiamond,FGold,FPlatformType,FGameIndex,FRegDate,FLastLoginTime) values('%s','%s','%s','%d','%d','%d','%d','%d','%s','%s');", 
             info.FPlatformID,info.FUserName,info.FHeadUrl,info.FSex,info.FDiamond,info.FGold,info.FPlatformType,info.FGameIndex,"NOW()","NOW()");
     
@@ -84,20 +84,20 @@ local function registerGuestUser(userInfo)
         return nil
     end    
 
-    local sqlStr = string.format("select * from TUser where FPlatformID=\"%s\";",userInfo.FPlatformID)
+    local sqlStr = string.format("select * from TUser where FPlatformID=\"%s\";",info.FPlatformID)
     local pRet   = skynet.call(getDBAddr(), "lua", "execDB", sqlStr)
     if pRet and type(pRet) == "table" and #pRet > 0 then 
-        userInfo.FUserID  = tonumber(pRet[1].FUserID)
-        userInfo.FRegDate       = pRet[1].FRegDate
-        userInfo.FLastLoginTime = pRet[1].FLastLoginTime
+        info.FUserID  = tonumber(pRet[1].FUserID)
+        info.FRegDate       = pRet[1].FRegDate
+        info.FLastLoginTime = pRet[1].FLastLoginTime
     else--找不到
         return nil
     end  
     --register success
-    local ret = cacheUser(userInfo)
+    local ret = cacheUser(info)
     Log.i(LOGTAG,"register success!")
     Log.dump(LOGTAG,ret)
-    return userInfo
+    return info
 end
 
 local function onLoginSuccess( pUserInfo, source, appName )
@@ -114,7 +114,8 @@ local function onLoginSuccess( pUserInfo, source, appName )
     --向allocServer查询 是否已经分配房间了
     --roomId
     local status,roomId = pcall(cluster.call, allocAppName, ".AllocService", "queryUser", pUserInfo.FUserID)
-    if status and roomId then 
+    Log.i(LOGTAG,"query roomId = %s from alloc server",tostring(roomId))
+    if status and roomId and roomId > 0 then 
         pUserInfo.roomId = roomId
     end 
     return {0;pUserInfo;}
@@ -192,12 +193,14 @@ function CMD.login(source, args, appName)
             end 
         end 
     end 
+
+    return onLoginFalid(-5)
 end
 
 ----注意清缓存
 function CMD.logout(source, uid, appName)
     if not uid then 
-        return false
+        return -1
     end 
 
     local userInfo = userMap[uid]
@@ -207,7 +210,24 @@ function CMD.logout(source, uid, appName)
         userInfo.appName   = nil
     end 
 
-    return true
+    return 0
+end
+
+function CMD.query(source, uid )
+    local status = -1
+    local data   = {}
+
+    local user = userMap[uid]
+    if user then 
+        status = 0
+        data.FUserID   = user.FUserID
+        data.FUserName = user.FUserName
+        data.FHeadUrl  = user.FHeadUrl
+        data.FSex      = user.FSex
+        data.FDiamond  = user.FDiamond
+        data.FGold     = user.FGold
+    end 
+    return data
 end
 
 ---! 服务的启动函数

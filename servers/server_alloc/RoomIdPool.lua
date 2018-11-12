@@ -59,7 +59,7 @@ function class:allocId()
 	end 
 end
 
-function class:useId(gameAppName, tableAddr, creatorId)
+function class:useId(roomId, gameAppName, tableAddr, creatorId)
 	local t = self.m_roomMap[roomId] or {}
 	t.gameAppName = gameAppName
 	t.tableAddr   = tableAddr

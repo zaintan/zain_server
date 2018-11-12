@@ -43,36 +43,25 @@ local function getGameServer()
     return minObj
 end
 
-local function rspCreate(appName, agentAddr, data)
-    pcall(cluster.call, appName, agentAddr, "sendClientMsg",2,3,"CreateRoomResponse",data)
-end
-
 local function create( uid, data, appName, agentAddr )
     local roomId           = roomIdPool:allocId()
     local gameServer       = getGameServer()
     if gameServer == nil then 
         Log.e(LOGTAG,"无可分配的游戏服务器")
-        rspCreate(appName, agentAddr,{status = -1; status_tip = "无可分配的游戏服务器";})
-        return nil
+        return const.MsgId.CreateRsp,{status = -1; status_tip = "无可分配的游戏服务器";}
     end 
     local status,tableAddr = pcall(cluster.call, gameServer:getClusterAddr(), ".GameService", "createTable", roomId, data)
-    if status and tableAddr then 
+    if status and tableAddr and tableAddr ~= -1 then 
         gameServer.tableNum = gameServer.tableNum + 1
         roomIdPool:useId(roomId, gameServer:getClusterAddr(), tableAddr, uid)
         --创建成功
-        rspCreate(appName, agentAddr,{status = 0; room_id = roomId;})
-        return true
+        return const.MsgId.CreateRsp, {status = 0; room_id = roomId;}
     end 
     --创建桌子失败 回收id
     gameServer.failedCount = gameServer.failedCount + 1
     roomIdPool:recoverId(roomId)
-    Log.e(LOGTAG,"创建桌子失败:%s", tostring(tableAddr))
-    rspCreate(appName, agentAddr,{status = -2; status_tip = "创建桌子失败";})  
-    return nil
-end
-
-local function rspJoin(appName, agentAddr, data)
-    pcall(cluster.call, appName, agentAddr, "sendClientMsg",2,3,"JoinRoomRoomResponse",data)
+    Log.e(LOGTAG,"创建桌子失败:%s", tostring(tableAddr)) 
+    return const.MsgId.CreateRsp, {status = -2; status_tip = "创建桌子失败";}
 end
 
 local function join( uid, roomId, appName, agentAddr )
@@ -86,27 +75,39 @@ local function join( uid, roomId, appName, agentAddr )
     if not gameAppName or not tableAddr then 
         Log.e(LOGTAG,"获取不到房间%d所在逻辑服的桌子地址", enterRoomId)
         userMap:removeObject(uid)
-        rspJoin(appName, agentAddr, {status = -1;status_tip = "获取不到房间所在逻辑服的桌子地址"..enterRoomId;})
-        return false
+        return const.MsgId.JoinRsp,{status = -1;status_tip = "获取不到房间所在逻辑服的桌子地址";}
     end 
     local status,ret = pcall(cluster.call, gameAppName,tableAddr, "join", uid, roomId, appName, agentAddr)
     --加入成功
     if status and ret then 
         if ret.status ~= 0 then--失败 
             userMap:removeObject(uid)
-            rspJoin(appName, agentAddr, ret)
-            return false
         end 
-        rspJoin(appName, agentAddr, ret) 
-        return true
+        return const.MsgId.JoinRsp,ret
     end 
     userMap:removeObject(uid)
     local status_tip = "链接逻辑服失败"
     if ret and ret.status_tip then 
         status_tip = ret.status_tip
-    end 
-    rspJoin(appName, agentAddr, {status = -2;status_tip = status_tip;})    
-    return false
+    end  
+    return const.MsgId.JoinRsp,{status = -2;status_tip = status_tip;}
+end
+
+local function sendClientMsg(appName, agentAddr,msgId, data )
+    pcall(cluster.call, appName, 
+                        agentAddr,  
+                        "sendClientMsg" , 
+                        const.ProtoMain.RESPONSE, 
+                        const.ProtoSub.ALLOC, 
+                        msgId, 
+                        data)
+end
+
+local function sendErrorTip(appName, agentAddr, content, type)
+    pcall(cluster.call, appName, 
+                        agentAddr,  
+                        "sendErrorTip", 
+                        content, type)
 end
 
 ---! lua commands
@@ -116,25 +117,30 @@ local CMD = {}
 function CMD.cliRequest(source, uid, msgId, msgBody, appName, agentAddr )
     skynet.ignoreret()
 
+    Log.i(LOGTAG,"recv cliRequest: msgId = %d",msgId)
+
     local msgName = ProtoHelper.IdToName[msgId]
     if not msgName then 
-        pcall(cluster.call, appName, agentAddr, "sendErrorTip", "找不到msgId对应的协议名!")
-        return
+        sendErrorTip(appName, agentAddr,"找不到msgId对应的协议名!")
+        return 
     end 
 
-    local data = packetHelper:decodeMsg("Zain."..msgName, args.msg_body)
+    local data = packetHelper:decodeMsg("Zain."..msgName, msgBody)
     if not data then 
-        pcall(cluster.call, appName, agentAddr, "sendErrorTip", "协议解析错误!")
-        return
+        sendErrorTip(appName, agentAddr,"协议解析错误!")
+        return 
+    end 
+    Log.dump(LOGTAG,data)
+    if msgId == 2 then --create
+        sendClientMsg(appName, agentAddr, create(uid, data, appName, agentAddr) )
+        return 
+    elseif msgId == 3 then --join
+        sendClientMsg(appName, agentAddr, join(uid, data.room_id, appName, agentAddr) )
+        return 
     end 
 
-    if msgId == 2 then --create
-        return create(uid, data, appName, agentAddr)
-    elseif msgId == 3 then --join
-        return join(uid, data.room_id, appName, agentAddr)
-    end 
-    --pcall(cluster.call, appName, agentAddr, "sendErrorTip", "协议解析错误!")
-    ---return
+    sendErrorTip(appName, agentAddr,"未定义的协议!")
+    return
 end
 
 ---! get the server stat
@@ -164,6 +170,7 @@ end
 function CMD.regServer(source, appName, addr)
     local gameServer = GameServerModel.create(appName, addr)
     gameServerList:addObject(gameServer, appName)
+    return true
 end
 
 --获取有效GameServer
@@ -180,7 +187,8 @@ end
 
 --from center server
 function CMD.queryUser(source, uid)
-    return userMap:getObject(uid)
+    Log.i(LOGTAG,"recv queryUser uid:%d from center!",uid)
+    return userMap:getObject(uid) or -1
 end
 
 --from game logic server

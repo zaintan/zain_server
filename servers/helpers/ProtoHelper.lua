@@ -1,15 +1,20 @@
 local M = {}
 M.IdToName = {
-	[1]     = "LoginRequest";
-	[10001] = "LoginResponse";
-	[2]     = "CreateRoomRequest";
-	[10002] = "CreateRoomResponse";
-	[3]     = "JoinRoomRequest";
-	[10003] = "JoinRoomRoomResponse";
-	[4]     = "HeartRequest";
-	[10004] = "HeartResponse";
+	[const.MsgId.LoginReq]       = "LoginRequest";
+	[const.MsgId.LoginRsp]       = "LoginResponse";
+	[const.MsgId.CreateReq]      = "CreateRoomRequest";
+	[const.MsgId.CreateRsp]      = "CreateRoomResponse";
+	[const.MsgId.JoinReq]        = "JoinRoomRequest";
+	[const.MsgId.JoinRsp]        = "JoinRoomRoomResponse";
+	[const.MsgId.HeartReq]       = "HeartRequest";
+	[const.MsgId.HeartRsp]       = "HeartResponse";
+	[const.MsgId.ReadyReq]       = "ReadyRequest";
+	[const.MsgId.ReadyRsp]       = "ReadyResponse";	
 
-	[20001] = "CommonTipsPush";
+	[const.MsgId.CommonTipsPush]  = "CommonTipsPush";
+	[const.MsgId.PlayerEnterPush] = "PlayerEnterPush";
+	[const.MsgId.ReadyPush]       = "ReadyPush";
+	[const.MsgId.GameStartPush]   = "GameStartPush";			
 };
 M.NameToId = nil;
 

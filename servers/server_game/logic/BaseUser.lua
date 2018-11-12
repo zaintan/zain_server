@@ -15,7 +15,7 @@ function BaseUser:ctor(info, seat)
     self.seatIndex    = seat or 0  
     self.playerStatus = 0
 
-
+    self.ready        = false
 end
 
 function BaseUser:getProto()
@@ -25,6 +25,7 @@ function BaseUser:getProto()
         head_img_url = self.FHeadUrl;
         score        = self.score;
         seat_index   = self.seatIndex;
+        ready        = self.ready;
     }
 end
 
@@ -44,6 +45,10 @@ end
 
 function BaseUser:isOffline()
     return self.appName == nil
+end
+
+function BaseUser:setReady( bVal )
+    self.ready = bVal and true or false
 end
 
 

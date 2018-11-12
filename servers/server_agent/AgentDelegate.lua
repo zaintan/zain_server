@@ -67,7 +67,7 @@ function class:quit(bNotiCenter, bNotiGame)
     Log.i("Agent","玩家下线!")
     --下线通知 中心服 和 游戏服
     if bNotiCenter then 
-        local ok, msg = pcall(cluster.call, self.centerApp, ".CenterService", "logout",
+        local ok, status = pcall(cluster.call, self.centerApp, ".CenterService", "logout",
                                 self.FUserID, self.appName)
     end 
 
@@ -89,13 +89,16 @@ function class:sendClientPacket( packet )
     end 
 end
 
-function class:sendClientMsg(main_type,sub_type,protoName,data)
-    local body    = packetHelper:encodeMsg("Zain."..protoName, data)
-    local msg_id  = ProtoHelper.NameToId[protoName]
+function class:sendClientMsg(main_type,sub_type,msg_id,data)
+
+    local protoName = ProtoHelper.IdToName[msg_id] 
+    local body      = packetHelper:encodeMsg("Zain."..protoName, data)
     self:outputProfile(main_type,msg_id)
 
     local packet = packetHelper:makeProtoData(main_type, sub_type,msg_id , body)
     self:sendClientPacket(packet)
+
+    return true
 end
 
 function class:handlerAllocRequest(msg, args)
@@ -104,9 +107,10 @@ function class:handlerAllocRequest(msg, args)
         return
     end     
 
-    local status,ret = pcall(cluster.call, self.allocApp, ".AllocService",  "cliRequest" , self.FUserID,args.msg_id, args.msg_body, self.appName, self.agent)
+    local status = pcall(cluster.call, self.allocApp, ".AllocService",  "cliRequest" , self.FUserID,args.msg_id, args.msg_body, self.appName, self.agent)
     if not status then 
         self:sendErrorTip("链接AllocServer失败!")
+        return 
     end 
 end
 
@@ -129,21 +133,27 @@ function class:handlerRoomRequest(msg, args)
         return
     end 
 
-    local ok,ret = pcall(cluster.call, self.gameApp, self.gameAddr, "onRequest", msg)
+    local ok,ret,retData = pcall(cluster.call, self.gameApp, self.gameAddr, "onRequest", self.FUserID, args.msg_id, args.msg_body)
     if not ok then 
         self:sendErrorTip("链接逻辑服失败!")
     end 
+
+    if ret and ret > 0 and retData then 
+        self:sendClientMsg(const.ProtoMain.RESPONSE, const.ProtoSub.GAME, ret, retData)
+    else
+        self:sendErrorTip("Game服务器未注册的协议!")
+    end     
 end
 
 function class:handlerHeartRequest(args)
-    self:sendClientMsg(2,1,"HeartResponse",{})
+    self:sendClientMsg(const.ProtoMain.RESPONSE, const.ProtoSub.GATE ,const.MsgId.HeartRsp,{})
 end
 
 function class:onLoginFailed(errString, errCode)
     local response = {}
     response.status     = errCode or -1
     response.status_tip = errString or ""
-    self:sendClientMsg(2,1,"LoginResponse",response)
+    self:sendClientMsg(const.ProtoMain.RESPONSE, const.ProtoSub.GATE ,const.MsgId.LoginRsp, response)
 end
 
 function class:handlerLoginRequest(args)
@@ -165,7 +175,7 @@ function class:handlerLoginRequest(args)
         Log.i("Agent","登录中心服返回验证:")
         Log.dump("Agent", msg)
         if msg[1] == 0 then --登录成功
-            self.FUserID = msg.FUserID
+            self.FUserID = msg[2].FUserID
             --return to client 
             local response = {}
             response.status   = 0
@@ -178,7 +188,7 @@ function class:handlerLoginRequest(args)
             t.gold         = msg[2].FGold
             t.room_id      = msg[2].roomId
             response.user_info = t
-            self:sendClientMsg(2,1,"LoginResponse",response)
+            self:sendClientMsg(const.ProtoMain.RESPONSE, const.ProtoSub.GATE, const.MsgId.LoginRsp,response)
         else 
             self:onLoginFailed(msg[2],msg[1])
         end 
@@ -263,7 +273,7 @@ function class:sendErrorTip(content, type)
     local data = {}
     data.type    = type or 1
     data.content = content or ""
-    self:sendClientMsg(4,1,"CommonTipsPush", data)
+    return self:sendClientMsg(const.ProtoMain.PUSH, const.ProtoSub.GATE, const.MsgId.CommonTipsPush, data)
 end
 
 function class:hadLogin()

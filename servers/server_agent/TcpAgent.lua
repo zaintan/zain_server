@@ -39,11 +39,11 @@ function CMD.sendClientPacket( packet )
 end
 
 function CMD.sendClientMsg(...)
-    agent:sendClientMsg(...)
+    return agent:sendClientMsg(...)
 end
 
 function CMD.sendErrorTip( ... )
-    agent:sendErrorTip(...)
+    return agent:sendErrorTip(...)
 end
 
 
